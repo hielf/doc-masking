@@ -1,0 +1,10 @@
+Hello, this is a sample text file for testing the Doc Masking application.
+
+This file contains multiple lines of text that will be converted to uppercase when processed.
+
+The application should:
+1. Read this file
+2. Convert all text to uppercase
+3. Save the result to a new file
+
+Let's see if it works!

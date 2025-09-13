@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Masking - Text Processor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #005a9e;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .process-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Doc Masking - Text Processor</h1>
+        
+        <div class="form-group">
+            <label for="inputPath">Input File Path:</label>
+            <div class="input-group">
+                <input type="text" id="inputPath" placeholder="Select or enter input file path...">
+                <button type="button" id="selectInputBtn">Browse</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="outputPath">Output File Path:</label>
+            <div class="input-group">
+                <input type="text" id="outputPath" placeholder="Select or enter output file path...">
+                <button type="button" id="selectOutputBtn">Browse</button>
+            </div>
+        </div>
+        
+        <button class="process-btn" id="processBtn">Process File</button>
+        
+        <div class="status info" id="status">
+            Ready to process files. Select input and output files, then click "Process File".
+        </div>
+    </div>
+
+    <script>
+        const inputPathEl = document.getElementById('inputPath');
+        const outputPathEl = document.getElementById('outputPath');
+        const selectInputBtn = document.getElementById('selectInputBtn');
+        const selectOutputBtn = document.getElementById('selectOutputBtn');
+        const processBtn = document.getElementById('processBtn');
+        const statusEl = document.getElementById('status');
+
+        function updateStatus(message, type = 'info') {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        selectInputBtn.addEventListener('click', async () => {
+            try {
+                const filePath = await window.electronAPI.selectInputFile();
+                if (filePath) {
+                    inputPathEl.value = filePath;
+                    updateStatus(`Selected input file: ${filePath}`, 'info');
+                }
+            } catch (error) {
+                updateStatus(`Error selecting input file: ${error.message}`, 'error');
+            }
+        });
+
+        selectOutputBtn.addEventListener('click', async () => {
+            try {
+                const filePath = await window.electronAPI.selectOutputFile();
+                if (filePath) {
+                    outputPathEl.value = filePath;
+                    updateStatus(`Selected output file: ${filePath}`, 'info');
+                }
+            } catch (error) {
+                updateStatus(`Error selecting output file: ${error.message}`, 'error');
+            }
+        });
+
+        processBtn.addEventListener('click', async () => {
+            const inputPath = inputPathEl.value.trim();
+            const outputPath = outputPathEl.value.trim();
+
+            if (!inputPath || !outputPath) {
+                updateStatus('Please select both input and output files.', 'error');
+                return;
+            }
+
+            processBtn.disabled = true;
+            updateStatus('Processing file... Please wait.', 'info');
+
+            try {
+                const result = await window.electronAPI.processDocument({
+                    inputPath: inputPath,
+                    outputPath: outputPath
+                });
+
+                if (result.status === 'success') {
+                    updateStatus(`✅ ${result.message}\nOutput saved to: ${result.output}`, 'success');
+                } else {
+                    updateStatus(`❌ Error: ${result.message}\n${result.error || ''}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Unexpected error: ${error.message}`, 'error');
+            } finally {
+                processBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
