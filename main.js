@@ -69,7 +69,9 @@ ipcMain.handle('select-output-file', async () => {
 
 ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
   return new Promise((resolve, reject) => {
-    const pythonProcess = spawn('python3', [
+    // Use python3 on macOS/Linux, python on Windows
+    const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
+    const pythonProcess = spawn(pythonCommand, [
       path.join(__dirname, 'python_backend', 'processor.py'),
       inputPath,
       outputPath

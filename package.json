@@ -2,15 +2,64 @@
   "name": "doc-masking",
   "version": "1.0.0",
   "main": "main.js",
+  "description": "A simple desktop app that converts text files to uppercase",
+  "author": "hielf",
+  "license": "ISC",
+  "homepage": "https://github.com/hielf/doc-masking",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux",
+    "dist": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "electron": "^38.1.0"
+  "keywords": ["electron", "text-processing", "desktop-app"],
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.hielf.doc-masking",
+    "productName": "Doc Masking",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "python_backend/**/*",
+      "sample.txt",
+      "!node_modules"
+    ],
+    "extraResources": [
+      {
+        "from": "python_backend",
+        "to": "python_backend"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Doc Masking"
+    },
+    "portable": {
+      "artifactName": "Doc Masking Portable.exe"
+    }
   }
 }
