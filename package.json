@@ -28,13 +28,20 @@
     "directories": {
       "output": "dist"
     },
+    "asar": true,
+    "compression": "maximum",
     "files": [
       "main.js",
       "preload.js",
       "index.html",
       "python_backend/**/*",
-      "sample.txt",
-      "!node_modules"
+      "sample.txt"
+    ],
+    "extraFiles": [
+      {
+        "from": "python_backend",
+        "to": "python_backend"
+      }
     ],
     "extraResources": [
       {
@@ -49,7 +56,8 @@
           "arch": ["x64"]
         }
       ],
-      "requestedExecutionLevel": "asInvoker"
+      "requestedExecutionLevel": "asInvoker",
+      "electronLanguages": ["en"]
     },
     "nsis": {
       "oneClick": false,
