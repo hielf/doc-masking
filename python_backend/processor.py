@@ -8,6 +8,22 @@ import sys
 import json
 import os
 
+# Support running as a script (python python_backend/processor.py) and as a module
+try:
+    # When run with -m or when repo root is in sys.path
+    from python_backend.pdf_processor import process_pdf_file  # type: ignore
+except Exception:
+    try:
+        # When run from inside the package context
+        from .pdf_processor import process_pdf_file  # type: ignore
+    except Exception:
+        # As a last resort, add repo root to sys.path and import again
+        _current_dir = os.path.dirname(os.path.abspath(__file__))
+        _repo_root = os.path.abspath(os.path.join(_current_dir, os.pardir))
+        if _repo_root not in sys.path:
+            sys.path.insert(0, _repo_root)
+        from python_backend.pdf_processor import process_pdf_file  # type: ignore
+
 def process_text_file(input_filepath, output_filepath):
     """
     Process a text file by converting its content to uppercase.
@@ -71,6 +87,9 @@ def process_text_file(input_filepath, output_filepath):
             "error": type(e).__name__
         }
 
+
+    
+
 def main():
     """Main function to handle command line arguments and process the file."""
     if len(sys.argv) != 3:
@@ -86,8 +105,13 @@ def main():
     input_filepath = sys.argv[1]
     output_filepath = sys.argv[2]
     
-    # Process the file
-    result = process_text_file(input_filepath, output_filepath)
+    # Choose processor based on input file extension
+    _, ext = os.path.splitext(input_filepath)
+    ext = ext.lower()
+    if ext == ".pdf":
+        result = process_pdf_file(input_filepath, output_filepath)
+    else:
+        result = process_text_file(input_filepath, output_filepath)
     
     # Output the result as JSON
     sys.stdout.write(json.dumps(result) + '\n')
