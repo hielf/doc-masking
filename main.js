@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 
 let mainWindow;
@@ -68,53 +69,104 @@ ipcMain.handle('select-output-file', async () => {
 });
 
 ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
-  return new Promise((resolve, reject) => {
-    // Use python3 on macOS/Linux, python on Windows
-    const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
-    const pythonProcess = spawn(pythonCommand, [
-      path.join(__dirname, 'python_backend', 'processor.py'),
-      inputPath,
-      outputPath
-    ]);
+  return new Promise((resolve) => {
+    const isWindows = process.platform === 'win32';
+    const backendBase = app.isPackaged
+      ? path.join(process.resourcesPath, 'python_backend')
+      : path.join(__dirname, 'python_backend');
 
-    let stdout = '';
-    let stderr = '';
+    const compiledPath = isWindows
+      ? path.join(backendBase, 'dist', 'processor.exe')
+      : path.join(backendBase, 'dist', 'processor');
+    const scriptPath = path.join(backendBase, 'processor.py');
 
-    pythonProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
+    const trySpawnCompiled = () => {
+      if (!fs.existsSync(compiledPath)) return null;
+      try {
+        return spawn(compiledPath, [inputPath, outputPath]);
+      } catch (_e) {
+        return null;
+      }
+    };
 
-    pythonProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    pythonProcess.on('close', (code) => {
-      if (code === 0) {
+    const trySpawnPython = () => {
+      const pythonCandidates = isWindows ? ['python', 'python3'] : ['python3', 'python'];
+      for (const cmd of pythonCandidates) {
         try {
-          const result = JSON.parse(stdout);
-          resolve(result);
-        } catch (error) {
+          return spawn(cmd, [scriptPath, inputPath, outputPath]);
+        } catch (_e) {
+          // try next candidate
+        }
+      }
+      return null;
+    };
+
+    const attachHandlers = (proc) => {
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      proc.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+      proc.on('close', (code) => {
+        if (code === 0) {
+          try {
+            const result = JSON.parse(stdout);
+            resolve(result);
+          } catch (error) {
+            resolve({
+              status: 'error',
+              message: 'Failed to parse processor output',
+              error: stdout
+            });
+          }
+        } else {
           resolve({
             status: 'error',
-            message: 'Failed to parse Python output',
-            error: stdout
+            message: 'Processor failed',
+            error: stderr || stdout
           });
         }
-      } else {
+      });
+      proc.on('error', (_error) => {
+        // If the current proc failed to start, fall back to Python once
+        if (proc.__attemptedFallback !== true) {
+          const fb = trySpawnPython();
+          if (fb) {
+            fb.__attemptedFallback = true;
+            attachHandlers(fb);
+            return;
+          }
+        }
         resolve({
           status: 'error',
-          message: 'Python process failed',
-          error: stderr || stdout
+          message: 'Failed to start processor',
+          error: `ENOENT or not executable. Looked for compiled at ${compiledPath} and script at ${scriptPath}`
         });
-      }
-    });
-
-    pythonProcess.on('error', (error) => {
-      resolve({
-        status: 'error',
-        message: 'Failed to start Python process',
-        error: error.message
       });
+    };
+
+    // Prefer compiled binary when available
+    const compiled = trySpawnCompiled();
+    if (compiled) {
+      attachHandlers(compiled);
+      return;
+    }
+
+    // Fallback to Python
+    const pythonProc = trySpawnPython();
+    if (pythonProc) {
+      pythonProc.__attemptedFallback = true;
+      attachHandlers(pythonProc);
+      return;
+    }
+
+    resolve({
+      status: 'error',
+      message: 'Failed to start processor',
+      error: `No usable processor found. Tried compiled at ${compiledPath} and Python at ${scriptPath}`
     });
   });
 });

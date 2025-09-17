@@ -14,17 +14,21 @@
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder --win --mac --linux",
     "dist": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:js": "jest --runInBand",
+    "test:py": "pytest -q",
+    "test": "npm run test:js && npm run test:py"
   },
   "keywords": ["electron", "text-processing", "desktop-app"],
   "dependencies": {},
   "devDependencies": {
     "electron": "^38.1.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jest": "^29.7.0"
   },
   "build": {
     "appId": "com.hielf.doc-masking",
     "productName": "Doc Masking",
+    "icon": "build/icon.ico",
     "directories": {
       "output": "dist"
     },
@@ -52,12 +56,14 @@
     "win": {
       "target": [
         {
-          "target": "portable",
+          "target": "dir",
           "arch": ["x64"]
         }
       ],
       "requestedExecutionLevel": "asInvoker",
-      "electronLanguages": ["en"]
+      "electronLanguages": ["en"],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,

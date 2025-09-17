@@ -1,0 +1,4 @@
+# Python backend protection/build dependencies (compatible with Python 3.13)
+pyinstaller>=6.5.0
+nuitka>=2.0.0
+cryptography>=42.0.0
