@@ -75,6 +75,14 @@
             cursor: not-allowed;
         }
         
+        /* Green style when ready to download */
+        button.download-ready {
+            background-color: #28a745;
+        }
+        button.download-ready:hover {
+            background-color: #1e7e34;
+        }
+        
         .process-btn {
             width: 100%;
             padding: 15px;
@@ -123,26 +131,18 @@
             </div>
         </div>
         
-        <div class="form-group">
-            <label for="outputPath">Output File Path:</label>
-            <div class="input-group">
-                <input type="text" id="outputPath" placeholder="Select or enter output file path...">
-                <button type="button" id="selectOutputBtn">Browse</button>
-            </div>
-        </div>
+        
         
         <button class="process-btn" id="processBtn">Process File</button>
         
         <div class="status info" id="status">
-            Ready to process files. Select input and output files, then click "Process File".
+            Ready to process files. Select an input file, then click "Process File".
         </div>
     </div>
 
     <script>
         const inputPathEl = document.getElementById('inputPath');
-        const outputPathEl = document.getElementById('outputPath');
         const selectInputBtn = document.getElementById('selectInputBtn');
-        const selectOutputBtn = document.getElementById('selectOutputBtn');
         const processBtn = document.getElementById('processBtn');
         const statusEl = document.getElementById('status');
 
@@ -150,6 +150,9 @@
             statusEl.textContent = message;
             statusEl.className = `status ${type}`;
         }
+        
+        let isDownloadReady = false;
+        let tempOutputPath = null;
 
         selectInputBtn.addEventListener('click', async () => {
             try {
@@ -163,45 +166,64 @@
             }
         });
 
-        selectOutputBtn.addEventListener('click', async () => {
-            try {
-                const filePath = await window.electronAPI.selectOutputFile();
-                if (filePath) {
-                    outputPathEl.value = filePath;
-                    updateStatus(`Selected output file: ${filePath}`, 'info');
-                }
-            } catch (error) {
-                updateStatus(`Error selecting output file: ${error.message}`, 'error');
-            }
-        });
-
         processBtn.addEventListener('click', async () => {
-            const inputPath = inputPathEl.value.trim();
-            const outputPath = outputPathEl.value.trim();
-
-            if (!inputPath || !outputPath) {
-                updateStatus('Please select both input and output files.', 'error');
+            // If a processed file is ready, clicking will trigger download/save
+            if (isDownloadReady && tempOutputPath) {
+                try {
+                    const savePath = await window.electronAPI.selectOutputFile();
+                    if (savePath) {
+                        const saveResult = await window.electronAPI.copyFile(tempOutputPath, savePath, true);
+                        if (saveResult.status === 'success') {
+                            updateStatus(`✅ File saved to: ${saveResult.dest}`, 'success');
+                            // Reset button back to normal state
+                            isDownloadReady = false;
+                            tempOutputPath = null;
+                            processBtn.textContent = 'Process File';
+                            processBtn.classList.remove('download-ready');
+                        } else {
+                            updateStatus(`❌ Failed to save file: ${saveResult.message || 'Unknown error'}`, 'error');
+                        }
+                    } else {
+                        updateStatus('⚠️ Save cancelled. Click "Save Now" to try again.', 'info');
+                    }
+                } catch (error) {
+                    updateStatus(`❌ Unexpected error during save: ${error.message}`, 'error');
+                }
                 return;
             }
 
+            const inputPath = inputPathEl.value.trim();
+
+            if (!inputPath) {
+                updateStatus('Please select an input file.', 'error');
+                return;
+            }
+
+            // Prepare button for processing state
+            processBtn.classList.remove('download-ready');
             processBtn.disabled = true;
+            processBtn.textContent = 'Processing...';
             updateStatus('Processing file... Please wait.', 'info');
 
             try {
-                const result = await window.electronAPI.processDocument({
-                    inputPath: inputPath,
-                    outputPath: outputPath
-                });
+                const result = await window.electronAPI.processDocument({ inputPath });
 
                 if (result.status === 'success') {
-                    updateStatus(`✅ ${result.message}\nOutput saved to: ${result.output}`, 'success');
+                    tempOutputPath = result.output;
+                    isDownloadReady = true;
+                    updateStatus(`✅ ${result.message}\nClick "Save Now" to save the processed file.`, 'success');
+                    processBtn.textContent = 'Save Now';
+                    processBtn.classList.add('download-ready');
+                    processBtn.disabled = false;
                 } else {
                     updateStatus(`❌ Error: ${result.message}\n${result.error || ''}`, 'error');
+                    processBtn.disabled = false;
+                    processBtn.textContent = 'Process File';
                 }
             } catch (error) {
                 updateStatus(`❌ Unexpected error: ${error.message}`, 'error');
-            } finally {
                 processBtn.disabled = false;
+                processBtn.textContent = 'Process File';
             }
         });
     </script>

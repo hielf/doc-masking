@@ -43,7 +43,7 @@ ipcMain.handle('select-input-file', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
     filters: [
-      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'Documents', extensions: ['txt', 'csv', 'pdf', 'doc', 'docx', 'xls', 'xlsx'] },
       { name: 'All Files', extensions: ['*'] }
     ]
   });
@@ -57,7 +57,8 @@ ipcMain.handle('select-input-file', async () => {
 ipcMain.handle('select-output-file', async () => {
   const result = await dialog.showSaveDialog(mainWindow, {
     filters: [
-      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'PDF Files', extensions: ['pdf'] },
+      { name: 'Text/CSV Files', extensions: ['txt', 'csv'] },
       { name: 'All Files', extensions: ['*'] }
     ]
   });
@@ -148,6 +149,21 @@ ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
       });
     };
 
+    // If no outputPath provided, generate a temporary output path
+    if (!outputPath || outputPath.trim() === '') {
+      try {
+        const inputExt = path.extname(inputPath || '').toLowerCase();
+        const ext = inputExt || '.txt';
+        const baseName = path.basename(inputPath || 'output', inputExt || '');
+        const tempDir = app.getPath('temp');
+        const uniqueName = `${baseName}-processed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+        outputPath = path.join(tempDir, uniqueName);
+      } catch (_e) {
+        // fallback
+        outputPath = path.join(app.getPath('temp'), `processed-${Date.now()}.txt`);
+      }
+    }
+
     // Prefer compiled binary when available
     const compiled = trySpawnCompiled();
     if (compiled) {
@@ -169,4 +185,27 @@ ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
       error: `No usable processor found. Tried compiled at ${compiledPath} and Python at ${scriptPath}`
     });
   });
+});
+
+// Copy a file to destination (optionally overwriting)
+ipcMain.handle('copy-file', async (_event, { src, dest, overwrite }) => {
+  try {
+    if (!src || !dest) {
+      return { status: 'error', message: 'src and dest are required' };
+    }
+    const destDir = path.dirname(dest);
+    await fs.promises.mkdir(destDir, { recursive: true });
+    try {
+      if (!overwrite) {
+        await fs.promises.copyFile(src, dest, fs.constants.COPYFILE_EXCL);
+      } else {
+        await fs.promises.copyFile(src, dest);
+      }
+    } catch (err) {
+      return { status: 'error', message: String(err) };
+    }
+    return { status: 'success', dest };
+  } catch (error) {
+    return { status: 'error', message: String(error) };
+  }
 });
