@@ -69,7 +69,7 @@ ipcMain.handle('select-output-file', async () => {
   return null;
 });
 
-ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
+ipcMain.handle('process-document', async (event, { inputPath, outputPath, policy }) => {
   return new Promise((resolve) => {
     const isWindows = process.platform === 'win32';
     const backendBase = app.isPackaged
@@ -172,7 +172,25 @@ ipcMain.handle('process-document', async (event, { inputPath, outputPath }) => {
     }
 
     // Fallback to Python
-    const pythonProc = trySpawnPython();
+    const pythonEnv = Object.assign({}, process.env, {
+      DOCMASK_ENTITY_POLICY: (() => {
+        try {
+          return JSON.stringify(policy || {});
+        } catch (_e) {
+          return '{}';
+        }
+      })()
+    });
+    const pythonCandidates = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+    let pythonProc = null;
+    for (const cmd of pythonCandidates) {
+      try {
+        pythonProc = spawn(cmd, [scriptPath, inputPath, outputPath], { env: pythonEnv });
+        break;
+      } catch (_e) {
+        // try next candidate
+      }
+    }
     if (pythonProc) {
       pythonProc.__attemptedFallback = true;
       attachHandlers(pythonProc);

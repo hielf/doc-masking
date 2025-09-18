@@ -250,3 +250,4 @@ dmypy.json
 # Test output files
 output.txt
 test_output.txt
+*.pdf

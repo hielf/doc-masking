@@ -24,7 +24,25 @@ except Exception:
             sys.path.insert(0, _repo_root)
         from python_backend.pdf_processor import process_pdf_file  # type: ignore
 
-def process_text_file(input_filepath, output_filepath):
+def _load_entity_policy_from_env():
+    """Load entity policy JSON from DOCMASK_ENTITY_POLICY env var."""
+    raw = os.environ.get("DOCMASK_ENTITY_POLICY", "{}")
+    try:
+        policy = json.loads(raw)
+        if not isinstance(policy, dict):
+            return {}
+        # normalize
+        policy.setdefault("mask_all", False)
+        entities = policy.get("entities", [])
+        if not isinstance(entities, list):
+            entities = []
+        policy["entities"] = [str(e) for e in entities]
+        return policy
+    except Exception:
+        return {}
+
+
+def process_text_file(input_filepath, output_filepath, policy=None):
     """
     Process a text file by converting its content to uppercase.
     
@@ -48,8 +66,20 @@ def process_text_file(input_filepath, output_filepath):
         with open(input_filepath, 'r', encoding='utf-8') as input_file:
             content = input_file.read()
         
-        # Process the content (convert to uppercase)
-        processed_content = content.upper()
+        from python_backend.detectors.rules import detect_entities_rules  # type: ignore
+        from python_backend.aggregator import merge_overlaps, filter_by_policy  # type: ignore
+        from python_backend.redaction import mask_text_spans  # type: ignore
+
+        policy = policy or _load_entity_policy_from_env()
+        if policy.get("mask_all"):
+            import re as _re
+            processed_content = _re.sub(r"[A-Za-z0-9]", "x", content)
+        else:
+            selected = policy.get("entities", []) or []
+            entities = detect_entities_rules(content, selected)
+            entities = merge_overlaps(entities)
+            entities = filter_by_policy(entities, policy)
+            processed_content = mask_text_spans(content, entities)
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_filepath)
@@ -108,10 +138,11 @@ def main():
     # Choose processor based on input file extension
     _, ext = os.path.splitext(input_filepath)
     ext = ext.lower()
+    policy = _load_entity_policy_from_env()
     if ext == ".pdf":
-        result = process_pdf_file(input_filepath, output_filepath)
+        result = process_pdf_file(input_filepath, output_filepath, policy)
     else:
-        result = process_text_file(input_filepath, output_filepath)
+        result = process_text_file(input_filepath, output_filepath, policy)
     
     # Output the result as JSON
     sys.stdout.write(json.dumps(result) + '\n')

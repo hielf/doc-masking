@@ -1,6 +1,7 @@
 import json
 import subprocess
 import sys
+import os
 from pathlib import Path
 
 def test_cli_success(tmp_path):
@@ -8,14 +9,17 @@ def test_cli_success(tmp_path):
     proc = repo / "python_backend" / "processor.py"
     src = tmp_path / "in.txt"
     dst = tmp_path / "out.txt"
-    src.write_text("abc", encoding="utf-8")
+    src.write_text("email: alice@example.com", encoding="utf-8")
 
-    cp = subprocess.run([sys.executable, str(proc), str(src), str(dst)], capture_output=True, text=True)
+    env = dict(**os.environ)
+    env["DOCMASK_ENTITY_POLICY"] = '{"entities": ["email"]}'
+    cp = subprocess.run([sys.executable, str(proc), str(src), str(dst)], capture_output=True, text=True, env=env)
 
     assert cp.returncode == 0
     data = json.loads(cp.stdout.strip())
     assert data["status"] == "success"
-    assert dst.read_text(encoding="utf-8") == "ABC"
+    out = dst.read_text(encoding="utf-8")
+    assert "alice@example.com" not in out
 
 
 def test_cli_pdf_success(tmp_path):

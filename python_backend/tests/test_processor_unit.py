@@ -10,15 +10,17 @@ from python_backend.processor import process_text_file
 from python_backend.pdf_processor import mask_text_value
 
 
-def test_process_text_file_uppercases(tmp_path):
+def test_process_text_file_policy_mask_email(tmp_path, monkeypatch):
     src = tmp_path / "in.txt"
     dst = tmp_path / "out.txt"
-    src.write_text("Hello, World!\n", encoding="utf-8")
+    src.write_text("Hello alice@example.com!\n", encoding="utf-8")
+    monkeypatch.setenv("DOCMASK_ENTITY_POLICY", "{\"entities\": [\"email\"]}")
 
     result = process_text_file(str(src), str(dst))
 
     assert result["status"] == "success"
-    assert dst.read_text(encoding="utf-8") == "HELLO, WORLD!\n"
+    out = dst.read_text(encoding="utf-8")
+    assert "alice@example.com" not in out
 
 
 def test_process_text_file_missing_input(tmp_path):
