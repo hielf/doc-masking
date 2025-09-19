@@ -67,6 +67,8 @@ def process_text_file(input_filepath, output_filepath, policy=None):
             content = input_file.read()
         
         from python_backend.detectors.rules import detect_entities_rules  # type: ignore
+        from python_backend.detectors.ner import detect_entities_ner  # type: ignore
+        from python_backend.detectors.address import detect_addresses  # type: ignore
         from python_backend.aggregator import merge_overlaps, filter_by_policy  # type: ignore
         from python_backend.redaction import mask_text_spans  # type: ignore
 
@@ -76,7 +78,17 @@ def process_text_file(input_filepath, output_filepath, policy=None):
             processed_content = _re.sub(r"[A-Za-z0-9]", "x", content)
         else:
             selected = policy.get("entities", []) or []
-            entities = detect_entities_rules(content, selected)
+            entities = []
+            # Run detectors
+            entities.extend(detect_entities_rules(content, selected))
+            try:
+                entities.extend(detect_entities_ner(content, selected))
+            except Exception:
+                pass
+            try:
+                entities.extend(detect_addresses(content, selected))
+            except Exception:
+                pass
             entities = merge_overlaps(entities)
             entities = filter_by_policy(entities, policy)
             processed_content = mask_text_spans(content, entities)
