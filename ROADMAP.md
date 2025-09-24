@@ -18,6 +18,7 @@ Short- and mid-term plan to evolve detection quality, redaction fidelity, platfo
 - Per-entity actions: mask, hash, remove, placeholder.
 - Per-entity thresholds and masking styles (preserve length, fixed token).
 - Entity groups/presets (Personal, Financial, Credentials) for quick policy switching.
+- Generate fake masking data instead of 'xxx' while masking the contents. e.g. name_001 for names, address_20250922 for address, 98xx1 for postal code.
 
 ### Performance and scalability
 - Batch/stream processing for large docs; parallelize per page where safe.
@@ -33,6 +34,7 @@ Short- and mid-term plan to evolve detection quality, redaction fidelity, platfo
 - Detection preview: highlight entities per page before committing redaction.
 - Confidence/threshold sliders; per-entity toggles (current) and presets.
 - Dry-run report export (JSON/CSV) of detected entities for audit.
+- Use Tailwind CSS to re-write the UI for modern, responsive design.
 
 ### Security and privacy
 - Deterministic masking (e.g., salted hash) option.

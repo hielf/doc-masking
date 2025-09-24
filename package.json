@@ -39,7 +39,7 @@
       "preload.js",
       "index.html",
       "python_backend/**/*",
-      "sample.txt"
+      "example/sample.txt"
     ],
     "extraFiles": [
       {

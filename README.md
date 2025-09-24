@@ -29,7 +29,7 @@ A simple desktop app that converts text files to uppercase. Built with Electron 
 - `main.js` - Electron main process
 - `index.html` - UI
 - `python_backend/processor.py` - Text processor
-- `sample.txt` - Test file
+- `example/sample.txt` - Test file
 
 ## Requirements
 
