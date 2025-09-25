@@ -1,0 +1,94 @@
+## Development Plan – Milestone M1
+
+Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in policy; determinism/unlinkability tests; dry-run reports.
+
+### Finished (with timestamp)
+- 2025-09-25: Modular pipeline scaffolding (`detectors/`, `aggregator.py`, `redaction.py`).
+- 2025-09-25: Rule-based detectors (email, phone, ZIP, SSN, credentials, financial).
+- 2025-09-25: NER + heuristics address detector; integrated into `processor.py`.
+- 2025-09-25: UI entity policy flow wired (`index.html` → `main.js` → backend env).
+- 2025-09-25: PDF masking honors policy for email/phone/ZIP; text masking via spans.
+- 2025-09-25: Tests added/updated (rules, aggregator, redaction, CLI/unit); 17 passing.
+- 2025-09-25: Documentation: `RULES.md`, `ROADMAP.md`; `.gitignore` updated.
+- 2025-09-25: Python 3.12 dev environment set up via pyenv/venv.
+
+### TODO (M1)
+1) Detector expansion (priority)
+- [ ] Credentials/secrets: vendor prefixes (GitHub/Slack/Stripe/OpenAI/AWS/Twilio), Authorization Bearer, OAuth tokens
+- [ ] Entropy-based generic token detector with context boosting (key/token/secret labels)
+- [ ] Crypto wallets: BIP‑39 mnemonic wordlist (12–24 words), BTC WIF (base58), ETH private keys (64 hex)
+- [ ] Device/network: IP (v4/v6), MAC, IMEI/MEID, serials, hostnames, SSIDs, cookies/session IDs
+- [ ] Contact/location: GPS coords/geohash, precise address+timestamp pairs, travel itineraries
+- [ ] Health (PHI): MRN/insurer IDs; ICD/CPT presence in medical context; provider names + condition cues
+- [ ] Special‑category (GDPR): race/ethnicity, religion, politics, union, orientation, biometric/genetic (context rules)
+- [ ] Employment/education: employee/student IDs, reviews, grades/transcripts
+- [ ] Commercial/trade secrets: code blocks, internal roadmaps, pricing/margins, customer/supplier lists, contracts/NDAs
+- [ ] Legal/privileged: case/docket numbers, attorney–client phrases, settlement/privileged terms
+- [ ] Transportation/vehicle: VINs, license plates, toll/transponder IDs
+- [ ] Calendar/communications: meeting invites, attendee lists, chat logs, email headers/routing
+- [ ] Children’s data: minors’ PII indicators and COPPA/FERPA policy routing
+
+2) Media & metadata redaction
+- [ ] Strip EXIF (GPS/device) on image import/output; remove PDF/Office author/company and tracked changes/comments
+- [ ] Decode and redact barcodes/QR codes (IDs/URLs/tokens) using zxing/pyzbar
+- [ ] Draft plan/backlog for faces, signatures, and ID‑region detection (later milestone)
+
+3) Pseudonymization engine
+- [ ] Implement HMAC‑based pseudonymizer (document‑ and environment‑scoped keys)
+- [ ] Add template expansion: `{hashN}`, `{index}`, `{date:%Y%m%d}`, `{shape}`, `keep_parts`
+- [ ] Wire per‑entity default templates:
+  - Names → `NAME_{hash8}`
+  - Addresses → `ADDRESS_{hash6}`
+  - Emails → `EMAIL_{hash6}@mask.local`
+  - Phones → format‑preserving; last 4 kept
+  - Postal codes → country‑shaped or `ZIP_{hash4}` (policy‑controlled)
+  - Credentials/Secrets → remove (true redaction)
+
+4) Policy and actions
+- [ ] Extend policy schema: `action` per entity (`remove|pseudonymize|format|placeholder`), `template`, `keep_parts`
+- [ ] CLI overrides and environment variables for policy options
+- [ ] Validate policy at startup; fallback to safe defaults
+
+5) Text and PDF application
+- [ ] Apply pseudonyms/placeholders in text masking (`mask_text_spans`)
+- [ ] PDF overlays: draw pseudonym/placeholder text with matching font/spacing; keep true redaction
+- [ ] Format‑preserving overlays for phones/emails in PDFs; enforce non‑routable masked email domains
+
+6) Reports and preview
+- [ ] Dry‑run JSON/CSV report (entities, pages, spans, actions, tokens)
+- [ ] UI preview (minimal): show masked token in result summary (phase 1)
+
+7) Testing and quality
+- [ ] Build gold corpus; precision/recall per entity; counters only (no content logging)
+- [ ] Determinism tests (same key → same token) and unlinkability tests (different keys → different tokens)
+- [ ] Collision checks for truncated hashes; template validation tests
+- [ ] PDF overlay assertions (length, clipping) and shape validators for phone/email after masking
+
+8) Security and key management
+- [ ] Key sourcing: document‑level default; optional environment‑level key; rotation plan documented
+- [ ] Forbid templates embedding original substrings; use non‑routable domains for masked emails
+
+9) Architecture & extensibility
+- [ ] Detector registry with category tags and confidence; simple plugin interface for adding detectors
+- [ ] Central aggregator with context boosting and policy filtering; shared utilities (entropy, validators)
+- [ ] Documentation for contributing new detectors and policies
+
+### Acceptance Criteria
+- Expanded detector coverage across listed categories with unit tests and measurable precision/recall on a small corpus
+- Media/metadata scrubbing implemented; barcode/QR decoding & redaction supported
+- Policy supports per‑entity actions/templates and is validated at runtime
+- Text and PDF outputs reflect chosen actions; credentials are removed, not masked
+- Pseudonymization is deterministic (given key) and unlinkable across keys
+- Dry‑run report available via CLI; determinism/unlinkability tests pass
+
+### Timeline (target)
+- Weeks 1–2: Detector expansion & media/metadata scrubbing; gold corpus; initial tests
+- Week 3: Pseudonymizer + policy + text/PDF application; reports; determinism tests
+- Week 4: PDF overlays refinements; format‑preserving masks; preview; polish and QA
+
+### Risks / Mitigations
+- PDF overlay fidelity → test on varied fonts/sizes; fallback to placeholder-only when metrics fail
+- Hash collisions when truncating → choose adequate length (≥8 hex) and guard with tests
+- Policy complexity → defaults + validation with clear errors
+
+

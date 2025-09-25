@@ -37,6 +37,24 @@ Notes
   - Scope: text, pdf
   - Caveats: US-only. Add per-country patterns as needed.
 
+  - Country examples:
+    - Canada (A1A 1A1 / A1A1A1):
+      ```
+      \b[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ -]?\d[ABCEGHJ-NPRSTV-Z]\d\b
+      ```
+    - UK (simplified, not exhaustive):
+      ```
+      \bGIR 0AA|(?:[A-Z]{1,2}\d[A-Z\d]? ?\d[ABD-HJLN-UW-Z]{2})\b
+      ```
+    - Germany:
+      ```
+      \b\d{5}\b
+      ```
+    - Australia:
+      ```
+      \b\d{4}\b
+      ```
+
 - government_id
   - Description: US Social Security Number
   - Pattern:
