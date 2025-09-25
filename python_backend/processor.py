@@ -69,6 +69,10 @@ def process_text_file(input_filepath, output_filepath, policy=None):
         from python_backend.detectors.rules import detect_entities_rules  # type: ignore
         from python_backend.detectors.ner import detect_entities_ner  # type: ignore
         from python_backend.detectors.address import detect_addresses  # type: ignore
+        from python_backend.detectors.secrets import detect_secrets  # type: ignore
+        from python_backend.detectors.identifiers import detect_identifiers  # type: ignore
+        from python_backend.detectors.phi import detect_phi  # type: ignore
+        from python_backend.detectors.domain import detect_domain_sensitive  # type: ignore
         from python_backend.aggregator import merge_overlaps, filter_by_policy  # type: ignore
         from python_backend.redaction import mask_text_spans  # type: ignore
 
@@ -87,6 +91,22 @@ def process_text_file(input_filepath, output_filepath, policy=None):
                 pass
             try:
                 entities.extend(detect_addresses(content, selected))
+            except Exception:
+                pass
+            try:
+                entities.extend(detect_secrets(content, selected))
+            except Exception:
+                pass
+            try:
+                entities.extend(detect_identifiers(content, selected))
+            except Exception:
+                pass
+            try:
+                entities.extend(detect_phi(content, selected))
+            except Exception:
+                pass
+            try:
+                entities.extend(detect_domain_sensitive(content, selected))
             except Exception:
                 pass
             entities = merge_overlaps(entities)

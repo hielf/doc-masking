@@ -1,0 +1,11 @@
+pricing
+price
+margin
+discount
+msrp
+cogs
+roadmap
+customer list
+supplier list
+contract
+nda

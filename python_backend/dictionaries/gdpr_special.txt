@@ -1,0 +1,20 @@
+religion
+christian
+muslim
+jewish
+hindu
+buddhist
+political
+democrat
+republican
+socialist
+union
+sexual orientation
+lgbt
+biometric
+fingerprint
+iris
+facial recognition
+genetic
+dna
+genome

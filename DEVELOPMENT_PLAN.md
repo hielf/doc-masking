@@ -14,19 +14,19 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 
 ### TODO (M1)
 1) Detector expansion (priority)
-- [ ] Credentials/secrets: vendor prefixes (GitHub/Slack/Stripe/OpenAI/AWS/Twilio), Authorization Bearer, OAuth tokens
-- [ ] Entropy-based generic token detector with context boosting (key/token/secret labels)
-- [ ] Crypto wallets: BIP‑39 mnemonic wordlist (12–24 words), BTC WIF (base58), ETH private keys (64 hex)
-- [ ] Device/network: IP (v4/v6), MAC, IMEI/MEID, serials, hostnames, SSIDs, cookies/session IDs
-- [ ] Contact/location: GPS coords/geohash, precise address+timestamp pairs, travel itineraries
-- [ ] Health (PHI): MRN/insurer IDs; ICD/CPT presence in medical context; provider names + condition cues
-- [ ] Special‑category (GDPR): race/ethnicity, religion, politics, union, orientation, biometric/genetic (context rules)
-- [ ] Employment/education: employee/student IDs, reviews, grades/transcripts
-- [ ] Commercial/trade secrets: code blocks, internal roadmaps, pricing/margins, customer/supplier lists, contracts/NDAs
-- [ ] Legal/privileged: case/docket numbers, attorney–client phrases, settlement/privileged terms
-- [ ] Transportation/vehicle: VINs, license plates, toll/transponder IDs
-- [ ] Calendar/communications: meeting invites, attendee lists, chat logs, email headers/routing
-- [ ] Children’s data: minors’ PII indicators and COPPA/FERPA policy routing
+- [x] Credentials/secrets: vendor prefixes (GitHub/Slack/Stripe/OpenAI/AWS/Twilio), Authorization Bearer, OAuth tokens
+- [x] Entropy-based generic token detector with context boosting (key/token/secret labels)
+- [x] Crypto wallets: BIP‑39 mnemonic wordlist (12–24 words), BTC WIF (base58), ETH private keys (64 hex)
+- [x] Device/network: IP (v4/v6), MAC, IMEI/MEID, serials, hostnames, SSIDs, cookies/session IDs
+- [x] Contact/location: GPS coords/geohash, precise address+timestamp pairs, travel itineraries
+- [x] Health (PHI): MRN/insurer IDs; ICD/CPT presence in medical context; provider names + condition cues
+- [x] Special‑category (GDPR): race/ethnicity, religion, politics, union, orientation, biometric/genetic (context rules)
+- [x] Employment/education: employee/student IDs, reviews, grades/transcripts
+- [x] Commercial/trade secrets: code blocks, internal roadmaps, pricing/margins, customer/supplier lists, contracts/NDAs
+- [x] Legal/privileged: case/docket numbers, attorney–client phrases, settlement/privileged terms
+- [x] Transportation/vehicle: VINs, license plates, toll/transponder IDs
+- [x] Calendar/communications: meeting invites, attendee lists, chat logs, email headers/routing
+- [x] Children’s data: minors’ PII indicators and COPPA/FERPA policy routing
 
 2) Media & metadata redaction
 - [ ] Strip EXIF (GPS/device) on image import/output; remove PDF/Office author/company and tracked changes/comments

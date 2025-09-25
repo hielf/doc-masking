@@ -1,0 +1,11 @@
+minor
+child
+children
+under 18
+guardian
+parent
+student
+kindergarten
+elementary
+middle school
+high school
