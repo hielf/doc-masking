@@ -29,8 +29,8 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 - [x] Children’s data: minors’ PII indicators and COPPA/FERPA policy routing
 
 2) Media & metadata redaction
-- [ ] Strip EXIF (GPS/device) on image import/output; remove PDF/Office author/company and tracked changes/comments
-- [ ] Decode and redact barcodes/QR codes (IDs/URLs/tokens) using zxing/pyzbar
+- [x] Strip EXIF (GPS/device) on image import/output; remove PDF/Office author/company and tracked changes/comments
+- [x] Decode and redact barcodes/QR codes (IDs/URLs/tokens) using zxing/pyzbar
 - [ ] Draft plan/backlog for faces, signatures, and ID‑region detection (later milestone)
 
 3) Pseudonymization engine

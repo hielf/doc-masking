@@ -32,6 +32,11 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
             }
 
         doc = fitz.open(input_filepath)
+        # Strip document metadata (author/title/etc.) and XMP
+        try:
+            doc.set_metadata({})
+        except Exception:
+            pass
         total_chars = 0
 
         from python_backend.detectors.rules import EMAIL_RE, PHONE_RE, US_ZIP_RE  # type: ignore
@@ -106,12 +111,49 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
                 page.apply_redactions()
             except Exception:
                 pass
+        # Optional QR/barcode redaction using pyzbar if available
+        try:
+            import numpy as _np  # type: ignore
+            import PIL.Image as _Image  # type: ignore
+            from pyzbar.pyzbar import decode as _decode  # type: ignore
+
+            for p in range(len(doc)):
+                page = doc[p]
+                pix = page.get_pixmap(alpha=False)
+                img = _Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                codes = _decode(img)
+                for code in codes:
+                    # code.rect gives left, top, width, height in pixels
+                    left, top, width, height = code.rect.left, code.rect.top, code.rect.width, code.rect.height
+                    # Map pixel rect to PDF user space
+                    # Compute scale factors from image pixels to page rect
+                    page_rect = page.rect
+                    scale_x = page_rect.width / pix.width
+                    scale_y = page_rect.height / pix.height
+                    rect = fitz.Rect(
+                        left * scale_x,
+                        top * scale_y,
+                        (left + width) * scale_x,
+                        (top + height) * scale_y,
+                    )
+                    try:
+                        page.add_redact_annot(rect, fill=(0, 0, 0))
+                    except Exception:
+                        pass
+                try:
+                    page.apply_redactions()
+                except Exception:
+                    pass
+        except Exception:
+            # pyzbar or pillow not installed; skip barcode redaction silently
+            pass
 
         output_dir = os.path.dirname(output_filepath)
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
 
-        doc.save(output_filepath)
+        # Ensure no incremental save (flatten metadata removal), garbage collect objects
+        doc.save(output_filepath, deflate=True, garbage=4, clean=True)
         doc.close()
 
         return {
