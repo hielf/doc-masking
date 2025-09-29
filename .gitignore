@@ -253,3 +253,6 @@ dmypy.json
 output.txt
 test_output.txt
 *.pdf
+
+# Generated test documents (can be regenerated)
+test_documents/

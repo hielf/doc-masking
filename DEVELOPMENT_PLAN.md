@@ -34,15 +34,17 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 - [ ] Draft plan/backlog for faces, signatures, and ID‑region detection (later milestone)
 
 3) Pseudonymization engine
-- [ ] Implement HMAC‑based pseudonymizer (document‑ and environment‑scoped keys)
-- [ ] Add template expansion: `{hashN}`, `{index}`, `{date:%Y%m%d}`, `{shape}`, `keep_parts`
-- [ ] Wire per‑entity default templates:
+- [x] Implement HMAC‑based pseudonymizer (document‑ and environment‑scoped keys)
+- [x] Add template expansion: `{hashN}`, `{index}`, `{date:%Y%m%d}`, `{shape}`, `keep_parts`
+- [x] Wire per‑entity default templates:
   - Names → `NAME_{hash8}`
   - Addresses → `ADDRESS_{hash6}`
   - Emails → `EMAIL_{hash6}@mask.local`
   - Phones → format‑preserving; last 4 kept
   - Postal codes → country‑shaped or `ZIP_{hash4}` (policy‑controlled)
   - Credentials/Secrets → remove (true redaction)
+  
+  Status: Implemented defaults behind env flag `DOCMASK_USE_DEFAULT_TEMPLATES`; text + PDF overlays wired.
 
 4) Policy and actions
 - [ ] Extend policy schema: `action` per entity (`remove|pseudonymize|format|placeholder`), `template`, `keep_parts`

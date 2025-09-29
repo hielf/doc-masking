@@ -75,6 +75,7 @@ def process_text_file(input_filepath, output_filepath, policy=None):
         from python_backend.detectors.domain import detect_domain_sensitive  # type: ignore
         from python_backend.aggregator import merge_overlaps, filter_by_policy  # type: ignore
         from python_backend.redaction import mask_text_spans  # type: ignore
+        from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
 
         policy = policy or _load_entity_policy_from_env()
         if policy.get("mask_all"):
@@ -111,7 +112,40 @@ def process_text_file(input_filepath, output_filepath, policy=None):
                 pass
             entities = merge_overlaps(entities)
             entities = filter_by_policy(entities, policy)
-            processed_content = mask_text_spans(content, entities)
+
+            use_defaults = os.environ.get("DOCMASK_USE_DEFAULT_TEMPLATES", "false").lower() in {"1", "true", "yes"}
+            if use_defaults and entities:
+                pseudo = Pseudonymizer.from_environment()
+
+                def _map_template(entity_type: str) -> str:
+                    if entity_type == "person_name":
+                        return "NAME_{hash8}"
+                    if entity_type == "address":
+                        return "ADDRESS_{hash6}"
+                    if entity_type == "email":
+                        return "EMAIL_{hash6}@mask.local"
+                    if entity_type == "phone":
+                        return "PHONE_{hash6}_{orig_last:4}"
+                    if entity_type == "postal_code":
+                        return "ZIP_{hash4}"
+                    # Fallback
+                    return f"{entity_type.upper()}_{{hash6}}"
+
+                def pseudonymize_fn(e, original):  # type: ignore[no-redef]
+                    et = str(e.get("type", "entity"))
+                    if et in {"credentials", "secrets"}:
+                        return ""  # true redaction (removal)
+                    tmpl = _map_template(et)
+                    return pseudo.pseudonymize(original, entity_type=et, template=tmpl)
+
+                processed_content = mask_text_spans(
+                    content,
+                    entities,
+                    preserve_length=False,
+                    pseudonymize_fn=pseudonymize_fn,
+                )
+            else:
+                processed_content = mask_text_spans(content, entities)
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_filepath)

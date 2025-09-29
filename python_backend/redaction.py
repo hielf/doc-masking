@@ -1,7 +1,20 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Callable
+
+try:
+    # Optional import; integration hook only
+    from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
+except Exception:  # pragma: no cover - if missing during some environments
+    Pseudonymizer = None  # type: ignore
 
 
-def mask_text_spans(text: str, entities: List[Dict[str, Any]], masking_char: str = 'x', preserve_length: bool = True) -> str:
+def mask_text_spans(
+    text: str,
+    entities: List[Dict[str, Any]],
+    masking_char: str = 'x',
+    preserve_length: bool = True,
+    *,
+    pseudonymize_fn: Optional[Callable[[Dict[str, Any], str], str]] = None,
+) -> str:
     if not entities:
         return text
     entities_sorted = sorted(entities, key=lambda e: e["start"])
@@ -16,10 +29,17 @@ def mask_text_spans(text: str, entities: List[Dict[str, Any]], masking_char: str
             continue
         pieces.append(text[last:s])
         length = e_end - s
-        if preserve_length:
-            pieces.append(masking_char * length)
+        if pseudonymize_fn is not None:
+            original = text[s:e_end]
+            try:
+                pieces.append(pseudonymize_fn(e, original))
+            except Exception:
+                pieces.append(masking_char * length if preserve_length else f"[{e.get('type','MASK')}]")
         else:
-            pieces.append(f"[{e.get('type','MASK')}]")
+            if preserve_length:
+                pieces.append(masking_char * length)
+            else:
+                pieces.append(f"[{e.get('type','MASK')}]")
         last = e_end
     pieces.append(text[last:])
     return ''.join(pieces)

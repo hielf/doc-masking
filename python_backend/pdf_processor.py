@@ -41,6 +41,7 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
 
         from python_backend.detectors.rules import EMAIL_RE, PHONE_RE, US_ZIP_RE  # type: ignore
         from python_backend.redaction import mask_pdf_spans  # type: ignore
+        from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
 
         for page in doc:
             page_dict = page.get_text("dict")
@@ -82,6 +83,18 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
                 phone_re = PHONE_RE if "phone" in selected else None
                 zip_re = US_ZIP_RE if "postal_code" in selected else None
 
+                use_defaults = os.environ.get("DOCMASK_USE_DEFAULT_TEMPLATES", "false").lower() in {"1", "true", "yes"}
+                pseudo = Pseudonymizer.from_environment() if use_defaults else None
+
+                def _map_template(entity_type: str) -> str:
+                    if entity_type == "email":
+                        return "EMAIL_{hash6}@mask.local"
+                    if entity_type == "phone":
+                        return "PHONE_{hash6}_{orig_last:4}"
+                    if entity_type == "postal_code":
+                        return "ZIP_{hash4}"
+                    return f"{entity_type.upper()}_{{hash6}}"
+
                 rects_to_mask = []
                 for block in page_dict.get("blocks", []):
                     for line in block.get("lines", []):
@@ -95,15 +108,19 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
                             rect = fitz.Rect(bbox)
                             total_chars += len(text)
                             # Determine if this span contains any selected entity
-                            should_mask = False
+                            matched_type = None
                             if email_re and email_re.search(text):
-                                should_mask = True
+                                matched_type = "email"
                             elif phone_re and phone_re.search(text):
-                                should_mask = True
+                                matched_type = "phone"
                             elif zip_re and zip_re.search(text):
-                                should_mask = True
-                            if should_mask:
-                                masked = mask_text_value(text)
+                                matched_type = "postal_code"
+                            if matched_type:
+                                if pseudo is not None:
+                                    tmpl = _map_template(matched_type)
+                                    masked = pseudo.pseudonymize(text, entity_type=matched_type, template=tmpl)
+                                else:
+                                    masked = mask_text_value(text)
                                 rects_to_mask.append({"rect": rect, "masked_text": masked})
                 if rects_to_mask:
                     mask_pdf_spans(page, rects_to_mask)

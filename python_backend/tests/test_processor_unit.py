@@ -23,6 +23,27 @@ def test_process_text_file_policy_mask_email(tmp_path, monkeypatch):
     assert "alice@example.com" not in out
 
 
+def test_process_text_file_default_templates_email_phone_credential(tmp_path, monkeypatch):
+    src = tmp_path / "in.txt"
+    dst = tmp_path / "out.txt"
+    src.write_text("Name Alice, email alice@example.com, phone 415-555-1234, jwt eyJabc.123.456\n", encoding="utf-8")
+    # Select entities and enable default templates
+    monkeypatch.setenv("DOCMASK_ENTITY_POLICY", '{"entities": ["person_name", "email", "phone", "credentials"]}')
+    monkeypatch.setenv("DOCMASK_USE_DEFAULT_TEMPLATES", "true")
+    monkeypatch.setenv("DOC_MASKING_ENV_KEY", "envk")
+    monkeypatch.setenv("DOC_MASKING_DOC_KEY", "dockey")
+
+    result = process_text_file(str(src), str(dst))
+    assert result["status"] == "success"
+    out = dst.read_text(encoding="utf-8")
+    # Email should be masked to non-routable domain
+    assert "@mask.local" in out and "alice@example.com" not in out
+    # Phone should keep last 4 digits
+    assert out.count("1234") >= 1
+    # Credentials removed (true redaction -> empty)
+    assert "eyJabc.123.456" not in out
+
+
 def test_process_text_file_missing_input(tmp_path):
     src = tmp_path / "missing.txt"
     dst = tmp_path / "out.txt"
