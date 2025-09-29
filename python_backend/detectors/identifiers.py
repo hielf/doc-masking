@@ -30,7 +30,7 @@ GPS_RE = re.compile(
 )
 GPS_LABEL = re.compile(r"(?i)(gps|coord|latitude|longitude|lat|lon)")
 
-# Geohash: base32 (excluding a,i,l,o) length 5–9 for precision
+# Geohash: base32 (excluding a,i,l,o) length 5-9 for precision
 GEOHASH_RE = re.compile(r"\b[0123456789bcdefghjkmnpqrstuvwxyz]{5,9}\b")
 GEOHASH_LABEL = re.compile(r"(?i)(geohash)")
 

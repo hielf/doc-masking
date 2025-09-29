@@ -31,7 +31,7 @@ ALNUM_5_12 = re.compile(r"\b[A-Z0-9\-]{5,12}\b")
 # Special-category (GDPR)
 SPECIAL_WORDS = re.compile(r"(?i)(race|ethnicity|religion|religious|political|union|sexual orientation|biometric|genetic)")
 
-# Children’s data
+# Children's data
 CHILDREN_WORDS = re.compile(r"(?i)(minor|under\s*18|child|children|guardian)")
 
 

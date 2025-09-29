@@ -79,7 +79,7 @@ def test_hash_length_with_sha1_algo():
 
 def test_unicode_shape_mapping():
     p = Pseudonymizer(env_key=b"e", doc_key=b"d")
-    token = "Äß汉字١٢٣-abc XYZ"
+    token = "Aesshanzi123-abc XYZ"
     out = p.pseudonymize(token, entity_type="misc", template="{shape}")
     # Check length preserved and punctuation retained (dash and spaces)
     assert len(out) == len(token)

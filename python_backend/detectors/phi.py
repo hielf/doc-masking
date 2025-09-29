@@ -11,7 +11,7 @@ ICD10_RE = re.compile(r"\b[A-TV-Z][0-9]{2}(?:\.[A-Z0-9]{1,4})?\b")
 # CPT: 5 digits, sometimes with modifiers; restrict to common range
 CPT_RE = re.compile(r"\b[0-9]{5}\b")
 
-# MRN/insurer IDs via context + alphanum token (6–12)
+# MRN/insurer IDs via context + alphanum token (6-12)
 MRN_LABEL = re.compile(r"(?i)\b(MRN|Med\.? Rec\.? No\.?|Medical Record Number|Member ID|Policy #|Insurance ID)\b")
 ALNUM_6_12 = re.compile(r"\b[A-Z0-9]{6,12}\b")
 

@@ -16,14 +16,14 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 1) Detector expansion (priority)
 - [x] Credentials/secrets: vendor prefixes (GitHub/Slack/Stripe/OpenAI/AWS/Twilio), Authorization Bearer, OAuth tokens
 - [x] Entropy-based generic token detector with context boosting (key/token/secret labels)
-- [x] Crypto wallets: BIP‑39 mnemonic wordlist (12–24 words), BTC WIF (base58), ETH private keys (64 hex)
+- [x] Crypto wallets: BIP-39 mnemonic wordlist (12-24 words), BTC WIF (base58), ETH private keys (64 hex)
 - [x] Device/network: IP (v4/v6), MAC, IMEI/MEID, serials, hostnames, SSIDs, cookies/session IDs
 - [x] Contact/location: GPS coords/geohash, precise address+timestamp pairs, travel itineraries
 - [x] Health (PHI): MRN/insurer IDs; ICD/CPT presence in medical context; provider names + condition cues
-- [x] Special‑category (GDPR): race/ethnicity, religion, politics, union, orientation, biometric/genetic (context rules)
+- [x] Special-category (GDPR): race/ethnicity, religion, politics, union, orientation, biometric/genetic (context rules)
 - [x] Employment/education: employee/student IDs, reviews, grades/transcripts
 - [x] Commercial/trade secrets: code blocks, internal roadmaps, pricing/margins, customer/supplier lists, contracts/NDAs
-- [x] Legal/privileged: case/docket numbers, attorney–client phrases, settlement/privileged terms
+- [x] Legal/privileged: case/docket numbers, attorney-client phrases, settlement/privileged terms
 - [x] Transportation/vehicle: VINs, license plates, toll/transponder IDs
 - [x] Calendar/communications: meeting invites, attendee lists, chat logs, email headers/routing
 - [x] Children’s data: minors’ PII indicators and COPPA/FERPA policy routing
@@ -31,18 +31,18 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 2) Media & metadata redaction
 - [x] Strip EXIF (GPS/device) on image import/output; remove PDF/Office author/company and tracked changes/comments
 - [x] Decode and redact barcodes/QR codes (IDs/URLs/tokens) using zxing/pyzbar
-- [ ] Draft plan/backlog for faces, signatures, and ID‑region detection (later milestone)
+- [ ] Draft plan/backlog for faces, signatures, and ID-region detection (later milestone)
 
 3) Pseudonymization engine
-- [x] Implement HMAC‑based pseudonymizer (document‑ and environment‑scoped keys)
+- [x] Implement HMAC-based pseudonymizer (document- and environment-scoped keys)
 - [x] Add template expansion: `{hashN}`, `{index}`, `{date:%Y%m%d}`, `{shape}`, `keep_parts`
-- [x] Wire per‑entity default templates:
-  - Names → `NAME_{hash8}`
-  - Addresses → `ADDRESS_{hash6}`
-  - Emails → `EMAIL_{hash6}@mask.local`
-  - Phones → format‑preserving; last 4 kept
-  - Postal codes → country‑shaped or `ZIP_{hash4}` (policy‑controlled)
-  - Credentials/Secrets → remove (true redaction)
+- [x] Wire per-entity default templates:
+  - Names -> `NAME_{hash8}`
+  - Addresses -> `ADDRESS_{hash6}`
+  - Emails -> `EMAIL_{hash6}@mask.local`
+  - Phones -> format-preserving; last 4 kept
+  - Postal codes -> country-shaped or `ZIP_{hash4}` (policy-controlled)
+  - Credentials/Secrets -> remove (true redaction)
   
   Status: Implemented defaults behind env flag `DOCMASK_USE_DEFAULT_TEMPLATES`; text + PDF overlays wired.
 
@@ -54,21 +54,21 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 5) Text and PDF application
 - [ ] Apply pseudonyms/placeholders in text masking (`mask_text_spans`)
 - [ ] PDF overlays: draw pseudonym/placeholder text with matching font/spacing; keep true redaction
-- [ ] Format‑preserving overlays for phones/emails in PDFs; enforce non‑routable masked email domains
+- [ ] Format-preserving overlays for phones/emails in PDFs; enforce non-routable masked email domains
 
 6) Reports and preview
-- [ ] Dry‑run JSON/CSV report (entities, pages, spans, actions, tokens)
+- [ ] Dry-run JSON/CSV report (entities, pages, spans, actions, tokens)
 - [ ] UI preview (minimal): show masked token in result summary (phase 1)
 
 7) Testing and quality
 - [ ] Build gold corpus; precision/recall per entity; counters only (no content logging)
-- [ ] Determinism tests (same key → same token) and unlinkability tests (different keys → different tokens)
+- [ ] Determinism tests (same key -> same token) and unlinkability tests (different keys -> different tokens)
 - [ ] Collision checks for truncated hashes; template validation tests
 - [ ] PDF overlay assertions (length, clipping) and shape validators for phone/email after masking
 
 8) Security and key management
-- [ ] Key sourcing: document‑level default; optional environment‑level key; rotation plan documented
-- [ ] Forbid templates embedding original substrings; use non‑routable domains for masked emails
+- [ ] Key sourcing: document-level default; optional environment-level key; rotation plan documented
+- [ ] Forbid templates embedding original substrings; use non-routable domains for masked emails
 
 9) Architecture & extensibility
 - [ ] Detector registry with category tags and confidence; simple plugin interface for adding detectors
@@ -78,19 +78,22 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 ### Acceptance Criteria
 - Expanded detector coverage across listed categories with unit tests and measurable precision/recall on a small corpus
 - Media/metadata scrubbing implemented; barcode/QR decoding & redaction supported
-- Policy supports per‑entity actions/templates and is validated at runtime
+- Policy supports per-entity actions/templates and is validated at runtime
 - Text and PDF outputs reflect chosen actions; credentials are removed, not masked
 - Pseudonymization is deterministic (given key) and unlinkable across keys
-- Dry‑run report available via CLI; determinism/unlinkability tests pass
+- Dry-run report available via CLI; determinism/unlinkability tests pass
 
 ### Timeline (target)
-- Weeks 1–2: Detector expansion & media/metadata scrubbing; gold corpus; initial tests
+- Weeks 1-2: Detector expansion & media/metadata scrubbing; gold corpus; initial tests
 - Week 3: Pseudonymizer + policy + text/PDF application; reports; determinism tests
-- Week 4: PDF overlays refinements; format‑preserving masks; preview; polish and QA
+- Week 4: PDF overlays refinements; format-preserving masks; preview; polish and QA
 
 ### Risks / Mitigations
-- PDF overlay fidelity → test on varied fonts/sizes; fallback to placeholder-only when metrics fail
-- Hash collisions when truncating → choose adequate length (≥8 hex) and guard with tests
-- Policy complexity → defaults + validation with clear errors
+- PDF overlay fidelity -> test on varied fonts/sizes; fallback to placeholder-only when metrics fail
+- Hash collisions when truncating -> choose adequate length (>=8 hex) and guard with tests
+- Policy complexity -> defaults + validation with clear errors
+
+### Code Standards
+- **Unicode Character Policy**: All code must use ASCII characters only. No Unicode emoji (❌, ✅, →, etc.) or special characters are allowed to ensure cross-platform compatibility, especially for Windows CI/CD environments. Use ASCII alternatives like `[ERROR]`, `[SUCCESS]`, `->` instead.
 
 

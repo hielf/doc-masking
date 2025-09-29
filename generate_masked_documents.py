@@ -20,7 +20,7 @@ from python_backend.test_runner_with_documents import EnhancedTestRunner
 
 def generate_masked_documents():
     """Generate masked versions of all test documents."""
-    print("🔒 Doc Masking - Generating Masked Documents")
+    print("[SECURE] Doc Masking - Generating Masked Documents")
     print("=" * 50)
     
     # Create test runner
@@ -37,8 +37,8 @@ def generate_masked_documents():
     print("\n3. Creating additional masked documents for inspection...")
     create_inspection_documents()
     
-    print("\n✅ Masked documents generation complete!")
-    print(f"\n📁 Check out the masked documents in: test_documents/masked_documents/")
+    print("\n[SUCCESS] Masked documents generation complete!")
+    print(f"\n[INFO] Check out the masked documents in: test_documents/masked_documents/")
     
     return results
 
@@ -74,7 +74,7 @@ def create_inspection_documents():
             with open(length_path, 'w', encoding='utf-8') as f:
                 f.write(length_preserving)
             
-            print(f"  📄 {doc.name}: original, expected, length-preserving")
+            print(f"  [FILE] {doc.name}: original, expected, length-preserving")
     
     # Create a summary document
     create_summary_document(inspection_dir, documents)
@@ -112,7 +112,7 @@ def create_summary_document(inspection_dir: str, documents: list):
         f.write("- **Expected Outputs:** `../test_expectations.json`\n")
         f.write("- **Actual Masked:** `../` (files ending with `_masked.txt`)\n")
     
-    print(f"  📋 Summary document: {summary_path}")
+    print(f"  [SUMMARY] Summary document: {summary_path}")
 
 def main():
     """Main function."""
@@ -121,7 +121,7 @@ def main():
         
         # Show summary
         print("\n" + "=" * 50)
-        print("📊 SUMMARY")
+        print("[SUMMARY] SUMMARY")
         print("=" * 50)
         
         summary = results["summary"]
@@ -129,17 +129,17 @@ def main():
         print(f"Successful: {summary['successful_tests']}")
         print(f"Success Rate: {summary['success_rate']:.1%}")
         
-        print(f"\n📁 Masked documents saved to:")
+        print(f"\n[INFO] Masked documents saved to:")
         print(f"  - test_documents/masked_documents/ (actual test results)")
         print(f"  - test_documents/masked_documents/inspection/ (comparison documents)")
         
-        print(f"\n🔍 To inspect masked documents:")
+        print(f"\n[INFO] To inspect masked documents:")
         print(f"  - View: test_documents/masked_documents/")
         print(f"  - Compare: test_documents/masked_documents/inspection/")
         print(f"  - Results: test_documents/test_results.json")
         
     except Exception as e:
-        print(f"❌ Error generating masked documents: {e}")
+        print(f"[ERROR] Error generating masked documents: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

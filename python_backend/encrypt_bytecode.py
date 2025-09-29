@@ -30,7 +30,7 @@ def save_key(key, key_file="encryption.key"):
     """Save encryption key to file"""
     with open(key_file, "wb") as f:
         f.write(key)
-    print(f"🔑 Encryption key saved to {key_file}")
+    print(f"[KEY] Encryption key saved to {key_file}")
 
 def load_key(key_file="encryption.key"):
     """Load encryption key from file"""
@@ -44,7 +44,7 @@ def load_key(key_file="encryption.key"):
 
 def encrypt_python_file(input_file, output_file, key):
     """Encrypt a Python file to bytecode and encrypt it"""
-    print(f"🔒 Encrypting {input_file}...")
+    print(f"[ENCRYPT] Encrypting {input_file}...")
     
     # Compile Python to bytecode
     bytecode_file = input_file.replace('.py', '.pyc')
@@ -72,7 +72,7 @@ def encrypt_python_file(input_file, output_file, key):
     # Clean up temporary bytecode file
     os.remove(bytecode_file)
     
-    print(f"✅ Encrypted bytecode saved to {output_file}")
+    print(f"[SUCCESS] Encrypted bytecode saved to {output_file}")
 
 def create_decryptor_script(encrypted_file, key_file, output_script):
     """Create a script that can decrypt and execute the encrypted bytecode"""
@@ -130,11 +130,11 @@ if __name__ == "__main__":
     with open(output_script, 'w') as f:
         f.write(decryptor_code)
     
-    print(f"✅ Decryptor script created: {output_script}")
+    print(f"[SUCCESS] Decryptor script created: {output_script}")
 
 def main():
     """Main encryption process"""
-    print("🔒 Encrypting Python backend...")
+    print("[ENCRYPT] Encrypting Python backend...")
     
     # Install cryptography
     install_cryptography()
@@ -148,13 +148,13 @@ def main():
     # Create decryptor script
     create_decryptor_script("processor_encrypted.bin", "encryption.key", "processor_encrypted.py")
     
-    print("\n✅ Encryption completed!")
-    print("📁 Files created:")
+    print("\n[SUCCESS] Encryption completed!")
+    print("[INFO] Files created:")
     print("  - processor_encrypted.bin (encrypted bytecode)")
     print("  - processor_encrypted.py (decryptor script)")
     print("  - encryption.key (encryption key)")
     
-    print("\n📋 Usage:")
+    print("\n[INFO] Usage:")
     print("  python processor_encrypted.py <input_file> <output_file>")
 
 if __name__ == "__main__":

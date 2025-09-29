@@ -40,10 +40,10 @@ def build_executable():
     
     try:
         subprocess.check_call(cmd)
-        print("✅ Executable built successfully!")
+        print("[SUCCESS] Executable built successfully!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed: {e}")
+        print(f"[ERROR] Build failed: {e}")
         return False
 
 def cleanup_build_files():
@@ -63,25 +63,25 @@ def cleanup_build_files():
 
 def main():
     """Main build process"""
-    print("🔧 Building protected Python backend...")
+    print("[BUILD] Building protected Python backend...")
     
     # Install PyInstaller
     install_pyinstaller()
     
     # Build executable
     if build_executable():
-        print("✅ Build completed successfully!")
-        print("📁 Executable location: dist/processor.exe")
+        print("[SUCCESS] Build completed successfully!")
+        print("[INFO] Executable location: dist/processor.exe")
         
         # Clean up
         cleanup_build_files()
         
-        print("\n📋 Next steps:")
+        print("\n[INFO] Next steps:")
         print("1. The processor.exe is now compiled and obfuscated")
         print("2. Update your Electron app to use processor.exe instead of processor.py")
         print("3. The executable contains all dependencies and is much harder to reverse engineer")
     else:
-        print("❌ Build failed. Check the error messages above.")
+        print("[ERROR] Build failed. Check the error messages above.")
 
 if __name__ == "__main__":
     main()

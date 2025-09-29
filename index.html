@@ -121,7 +121,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📄 Doc Masking - Text Processor</h1>
+        <h1>[DOC] Doc Masking - Text Processor</h1>
         
         <div class="form-group">
             <label for="inputPath">Input File Path:</label>
@@ -193,20 +193,20 @@
                     if (savePath) {
                         const saveResult = await window.electronAPI.copyFile(tempOutputPath, savePath, true);
                         if (saveResult.status === 'success') {
-                            updateStatus(`✅ File saved to: ${saveResult.dest}`, 'success');
+                            updateStatus(`[SUCCESS] File saved to: ${saveResult.dest}`, 'success');
                             // Reset button back to normal state
                             isDownloadReady = false;
                             tempOutputPath = null;
                             processBtn.textContent = 'Process File';
                             processBtn.classList.remove('download-ready');
                         } else {
-                            updateStatus(`❌ Failed to save file: ${saveResult.message || 'Unknown error'}`, 'error');
+                            updateStatus(`[ERROR] Failed to save file: ${saveResult.message || 'Unknown error'}`, 'error');
                         }
                     } else {
-                        updateStatus('⚠️ Save cancelled. Click "Save Now" to try again.', 'info');
+                        updateStatus('[WARNING] Save cancelled. Click "Save Now" to try again.', 'info');
                     }
                 } catch (error) {
-                    updateStatus(`❌ Unexpected error during save: ${error.message}`, 'error');
+                    updateStatus(`[ERROR] Unexpected error during save: ${error.message}`, 'error');
                 }
                 return;
             }
@@ -235,17 +235,17 @@
                 if (result.status === 'success') {
                     tempOutputPath = result.output;
                     isDownloadReady = true;
-                    updateStatus(`✅ ${result.message}\nClick "Save Now" to save the processed file.`, 'success');
+                    updateStatus(`[SUCCESS] ${result.message}\nClick "Save Now" to save the processed file.`, 'success');
                     processBtn.textContent = 'Save Now';
                     processBtn.classList.add('download-ready');
                     processBtn.disabled = false;
                 } else {
-                    updateStatus(`❌ Error: ${result.message}\n${result.error || ''}`, 'error');
+                    updateStatus(`[ERROR] Error: ${result.message}\n${result.error || ''}`, 'error');
                     processBtn.disabled = false;
                     processBtn.textContent = 'Process File';
                 }
             } catch (error) {
-                updateStatus(`❌ Unexpected error: ${error.message}`, 'error');
+                updateStatus(`[ERROR] Unexpected error: ${error.message}`, 'error');
                 processBtn.disabled = false;
                 processBtn.textContent = 'Process File';
             }

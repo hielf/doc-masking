@@ -97,9 +97,9 @@ def example_basic_test():
             print(f"Processed phones found: {len(processed_phones)}")
             
             if len(processed_emails) == 0 and len(processed_phones) == 0:
-                print("✅ SUCCESS: All sensitive data appears to be masked!")
+                print("[SUCCESS] All sensitive data appears to be masked!")
             else:
-                print("❌ WARNING: Some sensitive data may not be properly masked")
+                print("[WARNING] Some sensitive data may not be properly masked")
         
         else:
             print(f"Processing failed: {result.get('error', 'Unknown error')}")
@@ -178,7 +178,7 @@ def example_comprehensive_test():
             for pattern_name, pattern in patterns.items():
                 original_count = len(re.findall(pattern, test_doc.content))
                 processed_count = len(re.findall(pattern, actual_output))
-                print(f"  {pattern_name}: {original_count} → {processed_count} (masked: {original_count - processed_count})")
+                print(f"  {pattern_name}: {original_count} -> {processed_count} (masked: {original_count - processed_count})")
         
         else:
             print(f"Processing failed: {result.get('error', 'Unknown error')}")

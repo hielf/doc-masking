@@ -45,31 +45,31 @@ def build_with_nuitka():
     
     try:
         subprocess.check_call(cmd)
-        print("✅ Nuitka build completed successfully!")
+        print("[SUCCESS] Nuitka build completed successfully!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Nuitka build failed: {e}")
+        print(f"[ERROR] Nuitka build failed: {e}")
         return False
 
 def main():
     """Main build process"""
-    print("🔧 Building protected Python backend with Nuitka...")
+    print("[BUILD] Building protected Python backend with Nuitka...")
     
     # Install Nuitka
     install_nuitka()
     
     # Build with Nuitka
     if build_with_nuitka():
-        print("✅ Nuitka build completed successfully!")
-        print("📁 Executable location: dist/processor.exe")
+        print("[SUCCESS] Nuitka build completed successfully!")
+        print("[INFO] Executable location: dist/processor.exe")
         
-        print("\n📋 Benefits of Nuitka:")
+        print("\n[INFO] Benefits of Nuitka:")
         print("1. Compiles to C++ then to native machine code")
         print("2. Much harder to reverse engineer than PyInstaller")
         print("3. Better performance than interpreted Python")
         print("4. No Python runtime required on target machine")
     else:
-        print("❌ Nuitka build failed. Check the error messages above.")
+        print("[ERROR] Nuitka build failed. Check the error messages above.")
 
 if __name__ == "__main__":
     main()

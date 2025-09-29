@@ -12,7 +12,7 @@ from pathlib import Path
 def print_banner():
     """Print build banner"""
     print("=" * 60)
-    print("🔒 DOC MASKING - PROTECTED PYTHON BACKEND BUILDER")
+    print("[SECURE] DOC MASKING - PROTECTED PYTHON BACKEND BUILDER")
     print("=" * 60)
     print()
 
@@ -28,7 +28,7 @@ def show_menu():
 
 def build_pyinstaller():
     """Build using PyInstaller"""
-    print("🔧 Building with PyInstaller...")
+    print("[BUILD] Building with PyInstaller...")
     try:
         os.chdir("python_backend")
         result = subprocess.run([sys.executable, "build_executable.py"], 
@@ -36,18 +36,18 @@ def build_pyinstaller():
         os.chdir("..")
         
         if result.returncode == 0:
-            print("✅ PyInstaller build completed!")
+            print("[SUCCESS] PyInstaller build completed!")
             return True
         else:
-            print(f"❌ PyInstaller build failed: {result.stderr}")
+            print(f"[ERROR] PyInstaller build failed: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ PyInstaller build error: {e}")
+        print(f"[ERROR] PyInstaller build error: {e}")
         return False
 
 def build_nuitka():
     """Build using Nuitka"""
-    print("🔧 Building with Nuitka...")
+    print("[BUILD] Building with Nuitka...")
     try:
         os.chdir("python_backend")
         result = subprocess.run([sys.executable, "build_nuitka.py"], 
@@ -55,18 +55,18 @@ def build_nuitka():
         os.chdir("..")
         
         if result.returncode == 0:
-            print("✅ Nuitka build completed!")
+            print("[SUCCESS] Nuitka build completed!")
             return True
         else:
-            print(f"❌ Nuitka build failed: {result.stderr}")
+            print(f"[ERROR] Nuitka build failed: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ Nuitka build error: {e}")
+        print(f"[ERROR] Nuitka build error: {e}")
         return False
 
 def build_encrypted():
     """Build encrypted bytecode"""
-    print("🔧 Building encrypted bytecode...")
+    print("[BUILD] Building encrypted bytecode...")
     try:
         os.chdir("python_backend")
         result = subprocess.run([sys.executable, "encrypt_bytecode.py"], 
@@ -74,35 +74,35 @@ def build_encrypted():
         os.chdir("..")
         
         if result.returncode == 0:
-            print("✅ Encrypted bytecode build completed!")
+            print("[SUCCESS] Encrypted bytecode build completed!")
             return True
         else:
-            print(f"❌ Encrypted bytecode build failed: {result.stderr}")
+            print(f"[ERROR] Encrypted bytecode build failed: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ Encrypted bytecode build error: {e}")
+        print(f"[ERROR] Encrypted bytecode build error: {e}")
         return False
 
 def build_electron():
     """Build Electron app with protected backend"""
-    print("🔧 Building Electron app...")
+    print("[BUILD] Building Electron app...")
     try:
         result = subprocess.run(["npm", "run", "build:win"], 
                               capture_output=True, text=True)
         
         if result.returncode == 0:
-            print("✅ Electron app build completed!")
+            print("[SUCCESS] Electron app build completed!")
             return True
         else:
-            print(f"❌ Electron app build failed: {result.stderr}")
+            print(f"[ERROR] Electron app build failed: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ Electron app build error: {e}")
+        print(f"[ERROR] Electron app build error: {e}")
         return False
 
 def cleanup_build_files():
     """Clean up temporary build files"""
-    print("🧹 Cleaning up build files...")
+    print("[CLEANUP] Cleaning up build files...")
     
     cleanup_dirs = [
         "python_backend/build",
@@ -137,27 +137,27 @@ def main():
         
         if choice == "1":
             if build_pyinstaller():
-                print("\n📋 PyInstaller build completed!")
-                print("📁 Executable: python_backend/dist/processor.exe")
-                print("💡 This executable is obfuscated and standalone")
+                print("\n[SUCCESS] PyInstaller build completed!")
+                print("[INFO] Executable: python_backend/dist/processor.exe")
+                print("[TIP] This executable is obfuscated and standalone")
             break
             
         elif choice == "2":
             if build_nuitka():
-                print("\n📋 Nuitka build completed!")
-                print("📁 Executable: python_backend/dist/processor.exe")
-                print("💡 This executable is compiled to native code")
+                print("\n[SUCCESS] Nuitka build completed!")
+                print("[INFO] Executable: python_backend/dist/processor.exe")
+                print("[TIP] This executable is compiled to native code")
             break
             
         elif choice == "3":
             if build_encrypted():
-                print("\n📋 Encrypted bytecode build completed!")
-                print("📁 Files: processor_encrypted.py, processor_encrypted.bin, encryption.key")
-                print("💡 This approach requires Python runtime but code is encrypted")
+                print("\n[SUCCESS] Encrypted bytecode build completed!")
+                print("[INFO] Files: processor_encrypted.py, processor_encrypted.bin, encryption.key")
+                print("[TIP] This approach requires Python runtime but code is encrypted")
             break
             
         elif choice == "4":
-            print("🔧 Building all protection methods...")
+            print("[BUILD] Building all protection methods...")
             success_count = 0
             
             if build_pyinstaller():
@@ -167,32 +167,32 @@ def main():
             if build_encrypted():
                 success_count += 1
                 
-            print(f"\n📋 Built {success_count}/3 protection methods")
+            print(f"\n[SUCCESS] Built {success_count}/3 protection methods")
             break
             
         elif choice == "5":
-            print("👋 Goodbye!")
+            print("[EXIT] Goodbye!")
             sys.exit(0)
             
         else:
-            print("❌ Invalid choice. Please enter 1-5.")
+            print("[ERROR] Invalid choice. Please enter 1-5.")
             print()
     
     # Ask if user wants to build Electron app
-    build_electron_choice = input("\n🔧 Build Electron app with protected backend? (y/n): ").strip().lower()
+    build_electron_choice = input("\n[BUILD] Build Electron app with protected backend? (y/n): ").strip().lower()
     if build_electron_choice in ['y', 'yes']:
         if build_electron():
-            print("\n🎉 Complete build finished!")
-            print("📁 Check the 'dist' folder for your protected app")
+            print("\n[SUCCESS] Complete build finished!")
+            print("[INFO] Check the 'dist' folder for your protected app")
         else:
-            print("\n❌ Electron build failed")
+            print("\n[ERROR] Electron build failed")
     
     # Ask if user wants to clean up
-    cleanup_choice = input("\n🧹 Clean up temporary build files? (y/n): ").strip().lower()
+    cleanup_choice = input("\n[CLEANUP] Clean up temporary build files? (y/n): ").strip().lower()
     if cleanup_choice in ['y', 'yes']:
         cleanup_build_files()
     
-    print("\n✅ Build process completed!")
+    print("\n[SUCCESS] Build process completed!")
 
 if __name__ == "__main__":
     main()
