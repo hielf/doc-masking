@@ -7,6 +7,7 @@ Simple text processor that converts text files to uppercase.
 import sys
 import json
 import os
+import time
 
 # Support running as a script (python python_backend/processor.py) and as a module
 try:
@@ -42,17 +43,21 @@ def _load_entity_policy_from_env():
         return {}
 
 
-def process_text_file(input_filepath, output_filepath, policy=None):
+def process_text_file(input_filepath, output_filepath, policy=None, generate_report=False, report_output_path=None):
     """
-    Process a text file by converting its content to uppercase.
+    Process a text file by detecting and masking sensitive entities.
     
     Args:
         input_filepath (str): Path to the input text file
         output_filepath (str): Path to save the processed output file
+        policy (dict, optional): Entity masking policy
+        generate_report (bool): Whether to generate a dry-run report
+        report_output_path (str, optional): Path for report output (without extension)
     
     Returns:
         dict: Processing result with status and message
     """
+    start_time = time.time()
     try:
         # Check if input file exists
         if not os.path.exists(input_filepath):
@@ -77,6 +82,7 @@ def process_text_file(input_filepath, output_filepath, policy=None):
         from python_backend.redaction import mask_text_spans  # type: ignore
         from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
         from python_backend.policy import validate_and_normalize_policy, build_text_pseudonymize_fn  # type: ignore
+        from python_backend.security import derive_document_key  # type: ignore
 
         policy = policy or _load_entity_policy_from_env()
         policy = validate_and_normalize_policy(policy)
@@ -121,6 +127,12 @@ def process_text_file(input_filepath, output_filepath, policy=None):
                 has_actions = bool(policy.get("actions"))
                 if has_actions or use_defaults:
                     pseudo = Pseudonymizer.from_environment()
+                    # Derive document key for stronger unlinkability; do not log content
+                    try:
+                        doc_key = derive_document_key(input_filepath, content.encode("utf-8"))
+                        pseudo.set_document_key(doc_key)
+                    except Exception:
+                        pass
                     pseudonymize_fn = build_text_pseudonymize_fn(policy, pseudo)
                     preserve = bool(policy.get("preserve_length", False))
                     processed_content = mask_text_spans(
@@ -143,13 +155,49 @@ def process_text_file(input_filepath, output_filepath, policy=None):
         with open(output_filepath, 'w', encoding='utf-8') as output_file:
             output_file.write(processed_content)
         
-        return {
+        # Generate report if requested
+        processing_time_ms = (time.time() - start_time) * 1000
+        result = {
             "status": "success",
             "message": "File processed successfully!",
             "output": output_filepath,
             "input_file": input_filepath,
-            "characters_processed": len(processed_content)
+            "characters_processed": len(processed_content),
+            "processing_time_ms": processing_time_ms
         }
+        
+        if generate_report:
+            try:
+                from python_backend.reports import generate_dry_run_report, save_reports
+                
+                # Generate the report
+                report = generate_dry_run_report(
+                    document_path=input_filepath,
+                    document_type="text",
+                    entities=entities if 'entities' in locals() else [],
+                    policy=policy if policy else {},
+                    masked_text=processed_content,
+                    processing_time_ms=processing_time_ms
+                )
+                
+                # Save reports if output path provided
+                if report_output_path:
+                    saved_files = save_reports(report, report_output_path)
+                    result["report_files"] = saved_files
+                else:
+                    # Generate default report path
+                    base_name = os.path.splitext(os.path.basename(input_filepath))[0]
+                    report_dir = os.path.join(os.path.dirname(output_filepath), "reports")
+                    report_path = os.path.join(report_dir, f"{base_name}_report")
+                    saved_files = save_reports(report, report_path)
+                    result["report_files"] = saved_files
+                
+                result["report"] = report
+                
+            except Exception as e:
+                result["report_error"] = f"Failed to generate report: {str(e)}"
+        
+        return result
         
     except PermissionError as e:
         return {

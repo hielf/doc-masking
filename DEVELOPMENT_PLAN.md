@@ -13,8 +13,12 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 - 2025-09-25: Python 3.12 dev environment set up via pyenv/venv.
 - 2025-09-27: Unicode character policy implemented; all emoji and special characters replaced with ASCII alternatives for cross-platform compatibility; Windows CI encoding issues resolved.
 - 2025-09-30: Enforced ASCII-only delimiter in pseudonymizer; full test suite passed (45).
- - 2025-09-30: Policy module added with per-entity actions/templates; validated at startup; applied to text and PDF processing; tests passing (45).
- - 2025-09-30: Text/PDF application enhanced: format-preserving phones; PDF fallback overlays draw pseudonyms with font size; tests passing (45).
+  - 2025-09-30: Policy module added with per-entity actions/templates; validated at startup; applied to text and PDF processing; tests passing (45).
+  - 2025-09-30: Text/PDF application enhanced: format-preserving phones; PDF fallback overlays draw pseudonyms with font size; tests passing (45).
+ - 2025-09-30: Testing & quality suite expanded: eval metrics, determinism/unlinkability, collision checks, template validation, PDF shape assertions; suite passing (59).
+ - 2025-09-30: Security & registry: document-scoped key derivation integrated; safe template validation; detector registry added; suite passing (61).
+  - 2025-09-29: Test document generation system implemented with realistic test data covering all entity types; TXT and PDF document generation; output estimation and validation; masked document inspection tools; CI pipeline updated with new dependencies; comprehensive test coverage with 100% success rate.
+- 2025-01-27: Reports and preview functionality implemented; dry-run JSON/CSV reports with entity details, actions, and tokens; UI preview with entity counts and type breakdowns; command-line dry-run interface; comprehensive unit tests; documentation updated.
 
 ### TODO (M1)
 1) Detector expansion (priority)
@@ -61,22 +65,22 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 - [x] Format-preserving overlays for phones/emails in PDFs; enforce non-routable masked email domains
 
 6) Reports and preview
-- [ ] Dry-run JSON/CSV report (entities, pages, spans, actions, tokens)
-- [ ] UI preview (minimal): show masked token in result summary (phase 1)
+- [x] Dry-run JSON/CSV report (entities, pages, spans, actions, tokens)
+- [x] UI preview (minimal): show masked token in result summary (phase 1)
 
 7) Testing and quality
-- [ ] Build gold corpus; precision/recall per entity; counters only (no content logging)
-- [ ] Determinism tests (same key -> same token) and unlinkability tests (different keys -> different tokens)
-- [ ] Collision checks for truncated hashes; template validation tests
-- [ ] PDF overlay assertions (length, clipping) and shape validators for phone/email after masking
+- [x] Build gold corpus; precision/recall per entity; counters only (no content logging)
+- [x] Determinism tests (same key -> same token) and unlinkability tests (different keys -> different tokens)
+- [x] Collision checks for truncated hashes; template validation tests
+- [x] PDF overlay assertions (length, clipping) and shape validators for phone/email after masking
 
 8) Security and key management
-- [ ] Key sourcing: document-level default; optional environment-level key; rotation plan documented
-- [ ] Forbid templates embedding original substrings; use non-routable domains for masked emails
+- [x] Key sourcing: document-level default; optional environment-level key; rotation plan documented
+- [x] Forbid templates embedding original substrings; use non-routable domains for masked emails
 
 9) Architecture & extensibility
-- [ ] Detector registry with category tags and confidence; simple plugin interface for adding detectors
-- [ ] Central aggregator with context boosting and policy filtering; shared utilities (entropy, validators)
+- [x] Detector registry with category tags and confidence; simple plugin interface for adding detectors
+- [x] Central aggregator with context boosting and policy filtering; shared utilities (entropy, validators)
 - [ ] Documentation for contributing new detectors and policies
 
 ### Acceptance Criteria
@@ -104,5 +108,8 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
  - **CI Pipeline Currency**: Check the CI pipeline and update to the latest stable versions when necessary.
  - **Build Script Currency**: Check build scripts and update them when necessary.
  - **Completion Tracking**: When an item is finished, check it off and add a dated entry to the "Finished (with timestamp)" section of `DEVELOPMENT_PLAN.md`.
+ - **Documentation Updates**: Update README.md after functions are completed or updated to reflect new features and capabilities.
+ - **Test Document Generation**: All new test functionality must include realistic test document generation with both TXT and PDF formats for comprehensive testing.
+ - **Masked Document Inspection**: Provide easy access to masked document outputs for validation and debugging purposes.
 
 

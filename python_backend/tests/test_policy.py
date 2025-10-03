@@ -19,6 +19,17 @@ def test_validate_and_normalize_basic():
     assert p["actions"]["credentials"]["action"] == "remove"
 
 
+def test_template_forbid_original_echo():
+    raw = {
+        "entities": ["email"],
+        "actions": {
+            "email": {"action": "pseudonymize", "template": "{orig}"},
+        },
+    }
+    p = validate_and_normalize_policy(raw)
+    assert "template" not in p["actions"]["email"]
+
+
 def test_build_text_pseudonymize_fn_and_resolve_pdf_masks(monkeypatch):
     raw = {
         "entities": ["email", "phone", "credentials"],

@@ -39,6 +39,12 @@ def validate_and_normalize_policy(policy: Any) -> Dict[str, Any]:
                 entry["keep_parts"] = {"last": int(last)}
         normalized_actions[str(et)] = entry
     out["actions"] = normalized_actions
+    # Template validation: forbid obvious original-echoing templates
+    for et, cfg in list(out["actions"].items()):
+        tmpl = cfg.get("template")
+        if isinstance(tmpl, str) and ("{orig}" in tmpl or "{text}" in tmpl):
+            # Remove unsafe template
+            del out["actions"][et]["template"]
     # Optional global preserve_length hint for text; default False when using actions
     if "preserve_length" in policy:
         out["preserve_length"] = bool(policy.get("preserve_length"))

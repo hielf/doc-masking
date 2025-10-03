@@ -86,3 +86,9 @@ def test_unicode_shape_mapping():
     assert "-" in out and out.count(" ") == token.count(" ")
 
 
+def test_collision_check_truncated_hashes_do_not_trivially_collide():
+    p = Pseudonymizer(env_key=b"env", doc_key=b"doc")
+    a = p.pseudonymize("alice@example.com", entity_type="email", template="{hash6}")
+    b = p.pseudonymize("bob@example.com", entity_type="email", template="{hash6}")
+    assert a != b
+

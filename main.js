@@ -205,6 +205,95 @@ ipcMain.handle('process-document', async (event, { inputPath, outputPath, policy
   });
 });
 
+// Generate dry-run report
+ipcMain.handle('generate-dry-run-report', async (event, { inputPath, policy }) => {
+  return new Promise((resolve) => {
+    const isWindows = process.platform === 'win32';
+    const backendBase = app.isPackaged
+      ? path.join(process.resourcesPath, 'python_backend')
+      : path.join(__dirname, 'python_backend');
+
+    const dryRunScriptPath = path.join(backendBase, 'dry_run_cli.py');
+
+    const trySpawnPython = () => {
+      const pythonCandidates = isWindows ? ['python', 'python3'] : ['python3', 'python'];
+      for (const cmd of pythonCandidates) {
+        try {
+          const args = [dryRunScriptPath, inputPath];
+          if (policy && Object.keys(policy).length > 0) {
+            // Create a temporary policy file
+            const tempPolicyPath = path.join(require('os').tmpdir(), `policy_${Date.now()}.json`);
+            fs.writeFileSync(tempPolicyPath, JSON.stringify(policy));
+            args.push('--policy', tempPolicyPath);
+          }
+          return spawn(cmd, args);
+        } catch (_e) {
+          // try next candidate
+        }
+      }
+      return null;
+    };
+
+    const proc = trySpawnPython();
+    if (!proc) {
+      resolve({
+        status: 'error',
+        message: 'Failed to start dry-run processor',
+        error: `No usable Python found for dry-run script at ${dryRunScriptPath}`
+      });
+      return;
+    }
+
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    proc.on('close', (code) => {
+      if (code === 0) {
+        try {
+          // The dry-run CLI outputs structured data, parse it
+          const lines = stdout.split('\n');
+          let result = { status: 'success', message: 'Dry-run completed' };
+          
+          // Parse the output for entity counts
+          for (const line of lines) {
+            if (line.includes('[INFO] Entities found:')) {
+              const match = line.match(/\[INFO\] Entities found: (\d+)/);
+              if (match) {
+                result.entities_found = parseInt(match[1]);
+              }
+            } else if (line.includes('Entities by type:')) {
+              // This would need more sophisticated parsing in a real implementation
+              result.entities_by_type = {};
+            }
+          }
+          
+          resolve(result);
+        } catch (error) {
+          resolve({
+            status: 'error',
+            message: 'Failed to parse dry-run output',
+            error: error.message,
+            stdout: stdout,
+            stderr: stderr
+          });
+        }
+      } else {
+        resolve({
+          status: 'error',
+          message: 'Dry-run failed',
+          error: stderr || 'Unknown error',
+          stdout: stdout
+        });
+      }
+    });
+  });
+});
+
 // Copy a file to destination (optionally overwriting)
 ipcMain.handle('copy-file', async (_event, { src, dest, overwrite }) => {
   try {

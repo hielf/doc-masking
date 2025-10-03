@@ -43,6 +43,7 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
         from python_backend.redaction import mask_pdf_spans  # type: ignore
         from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
         from python_backend.policy import validate_and_normalize_policy, resolve_pdf_mask_text  # type: ignore
+        from python_backend.security import derive_document_key  # type: ignore
 
         for page in doc:
             page_dict = page.get_text("dict")
@@ -87,6 +88,14 @@ def process_pdf_file(input_filepath: str, output_filepath: str, policy=None):
 
                 use_defaults = os.environ.get("DOCMASK_USE_DEFAULT_TEMPLATES", "false").lower() in {"1", "true", "yes"}
                 pseudo = Pseudonymizer.from_environment() if use_defaults or policy.get("actions") else None
+                if pseudo is not None:
+                    try:
+                        # Use file path and basic page text to derive a document key
+                        sample_bytes = (page_dict.get("blocks") and str(page_dict["blocks"])[:1024].encode("utf-8")) or None
+                        doc_key = derive_document_key(input_filepath, sample_bytes)
+                        pseudo.set_document_key(doc_key)
+                    except Exception:
+                        pass
 
                 rects_to_mask = []
                 for block in page_dict.get("blocks", []):
