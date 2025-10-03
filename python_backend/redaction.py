@@ -60,4 +60,20 @@ def mask_pdf_spans(page, spans_with_rects: List[Dict[str, Any]], masking_char: s
                 page.apply_redactions()
             except Exception:
                 pass
+            # Overlay fallback: draw the masked/pseudonym text in the redacted area
+            if masked_text:
+                try:
+                    fontsize = float(item.get("fontsize", 11))
+                    page.insert_textbox(
+                        rect,
+                        masked_text,
+                        fontname="helv",
+                        fontsize=fontsize,
+                        color=(0, 0, 0),
+                        align=0,
+                        overlay=True,
+                    )
+                except Exception:
+                    # Best-effort only; ignore overlay errors
+                    pass
 

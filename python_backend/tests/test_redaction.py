@@ -58,6 +58,7 @@ def test_mask_pdf_spans_invokes_redact_annot_with_and_without_text():
     class DummyPage:
         def __init__(self):
             self.calls = []
+            self.overlays = []
 
         def add_redact_annot(self, rect, text=None, fill=None, text_color=None):  # noqa: D401, ARG002
             # Simulate TypeError only when text is not None to exercise fallback path
@@ -68,15 +69,20 @@ def test_mask_pdf_spans_invokes_redact_annot_with_and_without_text():
         def apply_redactions(self):  # noqa: D401
             pass
 
+        def insert_textbox(self, rect, text, fontname, fontsize, color, align, overlay):  # noqa: D401, ARG002
+            self.overlays.append((rect, text, fontsize))
+
     from python_backend.redaction import mask_pdf_spans
 
     page = DummyPage()
     items = [
-        {"rect": (0, 0, 10, 10), "masked_text": "MASKED"},
+        {"rect": (0, 0, 10, 10), "masked_text": "MASKED", "fontsize": 13},
         {"rect": (10, 10, 20, 20)},
     ]
     mask_pdf_spans(page, items)
     # 1) attempt with text (fails)  2) fallback without text  3) second annot without text
     assert len(page.calls) == 3
+    # Overlay fallback should be attempted with given fontsize
+    assert page.overlays and page.overlays[0][2] == 13
 
 

@@ -76,8 +76,10 @@ def process_text_file(input_filepath, output_filepath, policy=None):
         from python_backend.aggregator import merge_overlaps, filter_by_policy  # type: ignore
         from python_backend.redaction import mask_text_spans  # type: ignore
         from python_backend.pseudonymizer import Pseudonymizer  # type: ignore
+        from python_backend.policy import validate_and_normalize_policy, build_text_pseudonymize_fn  # type: ignore
 
         policy = policy or _load_entity_policy_from_env()
+        policy = validate_and_normalize_policy(policy)
         if policy.get("mask_all"):
             import re as _re
             processed_content = _re.sub(r"[A-Za-z0-9]", "x", content)
@@ -113,39 +115,24 @@ def process_text_file(input_filepath, output_filepath, policy=None):
             entities = merge_overlaps(entities)
             entities = filter_by_policy(entities, policy)
 
-            use_defaults = os.environ.get("DOCMASK_USE_DEFAULT_TEMPLATES", "false").lower() in {"1", "true", "yes"}
-            if use_defaults and entities:
-                pseudo = Pseudonymizer.from_environment()
-
-                def _map_template(entity_type: str) -> str:
-                    if entity_type == "person_name":
-                        return "NAME_{hash8}"
-                    if entity_type == "address":
-                        return "ADDRESS_{hash6}"
-                    if entity_type == "email":
-                        return "EMAIL_{hash6}@mask.local"
-                    if entity_type == "phone":
-                        return "PHONE_{hash6}_{orig_last:4}"
-                    if entity_type == "postal_code":
-                        return "ZIP_{hash4}"
-                    # Fallback
-                    return f"{entity_type.upper()}_{{hash6}}"
-
-                def pseudonymize_fn(e, original):  # type: ignore[no-redef]
-                    et = str(e.get("type", "entity"))
-                    if et in {"credentials", "secrets"}:
-                        return ""  # true redaction (removal)
-                    tmpl = _map_template(et)
-                    return pseudo.pseudonymize(original, entity_type=et, template=tmpl)
-
-                processed_content = mask_text_spans(
-                    content,
-                    entities,
-                    preserve_length=False,
-                    pseudonymize_fn=pseudonymize_fn,
-                )
+            if entities:
+                # If any actions are specified or default templates flag is set, build pseudonymize_fn
+                use_defaults = os.environ.get("DOCMASK_USE_DEFAULT_TEMPLATES", "false").lower() in {"1", "true", "yes"}
+                has_actions = bool(policy.get("actions"))
+                if has_actions or use_defaults:
+                    pseudo = Pseudonymizer.from_environment()
+                    pseudonymize_fn = build_text_pseudonymize_fn(policy, pseudo)
+                    preserve = bool(policy.get("preserve_length", False))
+                    processed_content = mask_text_spans(
+                        content,
+                        entities,
+                        preserve_length=preserve,
+                        pseudonymize_fn=pseudonymize_fn,
+                    )
+                else:
+                    processed_content = mask_text_spans(content, entities)
             else:
-                processed_content = mask_text_spans(content, entities)
+                processed_content = content
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_filepath)

@@ -105,8 +105,8 @@ class Pseudonymizer:
         if date is None:
             date = datetime.now(timezone.utc)
 
-        # Compute digest once per token+entity
-        digest = self._digest_hex(f"{entity_type}\u241F{normalized}")  # use unit separator-like char to reduce ambiguity
+        # Compute digest once per token+entity; use ASCII delimiter to avoid non-ASCII in source/runtime
+        digest = self._digest_hex(f"{entity_type}|{normalized}")
 
         def _expand_hash(match: re.Match[str]) -> str:
             n = int(match.group(1))

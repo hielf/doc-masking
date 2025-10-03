@@ -11,6 +11,10 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 - 2025-09-25: Tests added/updated (rules, aggregator, redaction, CLI/unit); 17 passing.
 - 2025-09-25: Documentation: `RULES.md`, `ROADMAP.md`; `.gitignore` updated.
 - 2025-09-25: Python 3.12 dev environment set up via pyenv/venv.
+- 2025-09-27: Unicode character policy implemented; all emoji and special characters replaced with ASCII alternatives for cross-platform compatibility; Windows CI encoding issues resolved.
+- 2025-09-30: Enforced ASCII-only delimiter in pseudonymizer; full test suite passed (45).
+ - 2025-09-30: Policy module added with per-entity actions/templates; validated at startup; applied to text and PDF processing; tests passing (45).
+ - 2025-09-30: Text/PDF application enhanced: format-preserving phones; PDF fallback overlays draw pseudonyms with font size; tests passing (45).
 
 ### TODO (M1)
 1) Detector expansion (priority)
@@ -47,14 +51,14 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
   Status: Implemented defaults behind env flag `DOCMASK_USE_DEFAULT_TEMPLATES`; text + PDF overlays wired.
 
 4) Policy and actions
-- [ ] Extend policy schema: `action` per entity (`remove|pseudonymize|format|placeholder`), `template`, `keep_parts`
+- [x] Extend policy schema: `action` per entity (`remove|pseudonymize|format|placeholder`), `template`, `keep_parts`
 - [ ] CLI overrides and environment variables for policy options
-- [ ] Validate policy at startup; fallback to safe defaults
+- [x] Validate policy at startup; fallback to safe defaults
 
 5) Text and PDF application
-- [ ] Apply pseudonyms/placeholders in text masking (`mask_text_spans`)
-- [ ] PDF overlays: draw pseudonym/placeholder text with matching font/spacing; keep true redaction
-- [ ] Format-preserving overlays for phones/emails in PDFs; enforce non-routable masked email domains
+- [x] Apply pseudonyms/placeholders in text masking (`mask_text_spans`)
+- [x] PDF overlays: draw pseudonym/placeholder text with matching font/spacing; keep true redaction
+- [x] Format-preserving overlays for phones/emails in PDFs; enforce non-routable masked email domains
 
 6) Reports and preview
 - [ ] Dry-run JSON/CSV report (entities, pages, spans, actions, tokens)
@@ -95,5 +99,10 @@ Scope (from ROADMAP): Pseudonymization + template engine; per-entity actions in 
 
 ### Code Standards
 - **Unicode Character Policy**: All code must use ASCII characters only. No Unicode emoji (❌, ✅, →, etc.) or special characters are allowed to ensure cross-platform compatibility, especially for Windows CI/CD environments. Use ASCII alternatives like `[ERROR]`, `[SUCCESS]`, `->` instead.
+ - **Unit Test Coverage for New Functions**: Every new function must include unit tests.
+ - **Tests for Modified Functions**: Review and update unit tests for any modified functions.
+ - **CI Pipeline Currency**: Check the CI pipeline and update to the latest stable versions when necessary.
+ - **Build Script Currency**: Check build scripts and update them when necessary.
+ - **Completion Tracking**: When an item is finished, check it off and add a dated entry to the "Finished (with timestamp)" section of `DEVELOPMENT_PLAN.md`.
 
 
