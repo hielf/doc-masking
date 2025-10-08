@@ -2,7 +2,11 @@
 
 [![CI](https://github.com/hielf/doc-masking/actions/workflows/ci.yml/badge.svg)](https://github.com/hielf/doc-masking/actions/workflows/ci.yml)
 
-A comprehensive document masking application that identifies and masks sensitive information in text and PDF documents. Built with Electron for the UI and Python for processing, featuring advanced entity detection, pseudonymization, and realistic test document generation.
+Protect Sensitive Data in the AI Era
+
+Using AI can be powerful—but uploading documents can put your personal or business information at risk. Sensitive data can be leaked or misused if not properly protected.
+
+Docusafely is a fully local, fast, and all-in-one tool that keeps your documents safe. With features like masking, pseudonymization, and anonymization, it ensures your content is protected before it ever reaches AI—completely free to use.
 
 ## Quick Start
 
